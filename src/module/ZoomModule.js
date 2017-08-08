@@ -140,7 +140,7 @@ class ZoomModule extends AbstractModule {
 
     this.gridAxisModule = new GridAxisModule();
 
-    this._onScrollMouseEvent = this._onScrollMouseEvent.bind(this);
+    this._onScrollBarMouseEvent = this._onScrollBarMouseEvent.bind(this);
     this._updateOffset = this._updateOffset.bind(this);
   }
 
@@ -159,7 +159,7 @@ class ZoomModule extends AbstractModule {
     const visibleWidth = this._block.width;
     const height = this.params.get('scrollBarHeight');
 
-    $container.style.width = this._block.width + 'px';
+    $container.style.width = visibleWidth + 'px';
     $container.style.height = height + 'px';
 
     // init with dummy pixel per second
@@ -194,7 +194,7 @@ class ZoomModule extends AbstractModule {
     this._scrollTrack = scrollTrack;
     this._scrollBar = scrollBar;
 
-    this._scrollTimeline.on('event', this._onScrollMouseEvent);
+    this._scrollTimeline.on('event', this._onScrollBarMouseEvent);
 
     // init states
     this._zoomState = new ZoomState(this._block, this._block.ui.timeline, this._scrollBar);
@@ -280,7 +280,7 @@ class ZoomModule extends AbstractModule {
   /**
    * Events emitted by the scroll timeline.
    */
-  _onScrollMouseEvent(e) {
+  _onScrollBarMouseEvent(e) {
     const timeline = this._block.ui.timeline;
 
     switch (e.type) {
@@ -306,6 +306,7 @@ class ZoomModule extends AbstractModule {
     const mainTimeContext = mainTimeline.timeContext;
     const duration = this._block.duration;
 
+    // zoom cannot be < 1 (cf. ZoomState)
     if (mainTimeContext.zoom > 1) {
       let offset = mainTimeContext.offset;
       const visibleDuration = mainTimeContext.visibleDuration;
