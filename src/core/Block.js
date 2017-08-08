@@ -1,5 +1,5 @@
 import * as ui from 'waves-ui';
-import AbstractModule from './AbstractModule';
+// import AbstractModule from './AbstractModule';
 import parameters from '@ircam/parameters';
 
 const EVENTS = {
@@ -249,8 +249,8 @@ class Block {
    * @param {AbstractModule} module - Module to add
    */
   add(module) {
-    if (!(module instanceof AbstractModule))
-      throw new Error(`module is not an instance of AbstractModule`);
+    // if (!(module instanceof AbstractModule))
+    //   throw new Error(`module is not an instance of AbstractModule`);
 
     const index = this._modules.indexOf(module);
 
@@ -270,8 +270,8 @@ class Block {
    * @param {AbstractModule} module - Module to remove
    */
   remove(module) {
-    if (!(module instanceof AbstractModule))
-      throw new Error(`module is not an instance of AbstractModule`);
+    // if (!(module instanceof AbstractModule))
+    //   throw new Error(`module is not an instance of AbstractModule`);
 
     const index = this._modules.indexOf(module);
 
