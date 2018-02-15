@@ -36,10 +36,8 @@ class Multiline extends ui.shapes.BaseShape {
 
   // recenter on zero
   update(renderingContext, data) {
-    // console.log(data);
     const timeOffset = data[0].time;
     const numFrames = data.length;
-    // const numFrames = 10;
     const frameSize = this.params.frameSize;
 
     for (let i = 0; i < frameSize; i++) {
@@ -55,8 +53,6 @@ class Multiline extends ui.shapes.BaseShape {
           path += 'L';
       }
 
-      // console.log(path);
-
       this.$paths[i].setAttributeNS(null, 'd', path);
     }
   }
@@ -67,20 +63,14 @@ const definitions = {};
 class BpfModule extends AbstractModule {
   constructor(options) {
     super(definitions, options);
+
+    this._lines = null;
   }
 
-  install(block) {
-    this._block = block;
-  }
-
-  uninstall(block) {
-
-  }
-
-  setTrack(trackConfig) {
-    const block = this._block;
+  setTrack(buffer, metadata) {
+    const block = this.block;
     const { track, timeContext } = block.ui;
-    const recording = trackConfig.data;
+    const recording = metadata.data;
 
     if (this._lines)
       track.remove(this._lines);
@@ -96,8 +86,6 @@ class BpfModule extends AbstractModule {
     }, {});
 
     track.add(lines);
-    lines.render();
-    lines.update();
 
     this._lines = lines;
   }

@@ -40,27 +40,15 @@ class SimpleWaveform extends ui.shapes.BaseShape {
     if (!samplesPerPixel || datum.length < samplesPerPixel)
       return;
 
-    // compute/draw visible area only
-    // @TODO refactor this ununderstandable mess
-    let minX = Math.max(-renderingContext.offsetX, 0);
-    let trackDecay = renderingContext.trackOffsetX + renderingContext.startX;
-
-    if (trackDecay < 0)
-      minX = -trackDecay;
-
-    let maxX = minX;
-    maxX += (renderingContext.width - minX < renderingContext.visibleWidth) ?
-      renderingContext.width : renderingContext.visibleWidth;
-
-    // get min/max per pixels, clamped to the visible area
-    const invert = renderingContext.timeToPixel.invert;
+    const { minX, maxX } = renderingContext;
+    const pixelToTime = renderingContext.timeToPixel.invert;
     const sampleRate = this.params.sampleRate;
+    const blockSize = 5; // this.params.barWidth;
     const minMax = [];
 
-    const blockSize = 5;
-
+    // get min/max per bar, clamped to the visible area
     for (let px = minX; px < maxX; px += blockSize) {
-      const startTime = invert(px);
+      const startTime = pixelToTime(px);
       const startSample = startTime * sampleRate;
       const extract = datum[sliceMethod](startSample, startSample + samplesPerPixel);
 
@@ -84,7 +72,6 @@ class SimpleWaveform extends ui.shapes.BaseShape {
       const MIN   = 1;
       const MAX   = 2;
 
-      // rendering...
       let d = 'M';
 
       for (let i = 0, l = minMax.length; i < l; i++) {
@@ -116,7 +103,9 @@ const definitions = {
 };
 
 /**
- * Module that display the waveform of the audio buffer.
+ * Module that display the waveform of the audio buffer. In case non-mono
+ * audio files, only the left channel is rendered. For more accurate
+ * representation see WaveformModule.
  *
  * @param {Object} options - Override default parameters
  * @param {String} [options.color='steelblue'] - Color of the waveform
@@ -128,12 +117,13 @@ class SimpleWaveformModule extends AbstractModule {
     this._waveform = null;
   }
 
-  install(block) {
-    const { track, timeContext } = block.ui;
+  install() {
+    const { track, timeContext } = this.block.ui;
 
     this._waveform = new ui.core.Layer('entity', [], {
-      height: block.height,
+      height: this.block.height,
       yDomain: [-1, 1],
+      zIndex: this.zIndex,
     });
 
     this._waveform.setTimeContext(timeContext);
@@ -144,21 +134,18 @@ class SimpleWaveformModule extends AbstractModule {
     track.add(this._waveform);
   }
 
-  uninstall(block) {
-    const { track } = block.ui;
-    track.remove(this._waveform);
+  uninstall() {
+    this.block.ui.track.remove(this._waveform);
   }
 
-  setTrack(trackConfig, trackBuffer) {
-    this._waveform.data = trackBuffer.getChannelData(0);
+  setTrack(buffer, metadata) {
+    this._waveform.data = buffer.getChannelData(0);
     this._waveform.render(); // update bindings between data and shapes
 
     // hack to set the smaple rate properly
     const $item = this._waveform.$el.querySelector('.simple-waveform');
     const shape = this._waveform.getShapeFromItem($item);
-    shape.params.sampleRate = trackBuffer.sampleRate;
-
-    this._waveform.update();
+    shape.params.sampleRate = buffer.sampleRate;
   }
 }
 

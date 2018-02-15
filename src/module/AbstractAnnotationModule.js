@@ -118,10 +118,8 @@ class AbstractAnnotationModule extends AbstractModule {
    * derived class shoud set the
    *
    */
-  install(block) {
-    this._track = block.ui.track;
-    this._timeline = block.ui.timeline;
-    this._block = block;
+  install() {
+    this._timeline = this.block.ui.timeline;
   }
 
   postInstall(layer) {
@@ -129,8 +127,8 @@ class AbstractAnnotationModule extends AbstractModule {
     this._labelEditionState = new LabelEditionState(this._timeline, layer);
   }
 
-  uninstall(block) {
-    this._track.remove(this._layer);
+  uninstall() {
+    this.block.ui.track.remove(this._layer);
   }
 
   render() {
@@ -138,9 +136,8 @@ class AbstractAnnotationModule extends AbstractModule {
     this._layer.update();
   }
 
-  setTrack(trackConfig) {
-    this._layer.data = trackConfig.markers || [];
-    this.render();
+  setTrack(buffer, metadata) {
+    this._layer.data = metadata.markers || [];
   }
 
   _createAnnotation(position) {
@@ -174,7 +171,7 @@ class AbstractAnnotationModule extends AbstractModule {
               this._labelEditionState.updateLabel();
               this._timeline.state = null;
 
-              this._block.createSnapshot();
+              this.block.createSnapshot();
 
               document.removeEventListener('mousedown', clearLabelEdition);
             }
@@ -184,7 +181,7 @@ class AbstractAnnotationModule extends AbstractModule {
           return false;
         } else {
           this._createAnnotation(e.x);
-          this._block.createSnapshot();
+          this.block.createSnapshot();
         }
 
         break;
@@ -215,10 +212,15 @@ class AbstractAnnotationModule extends AbstractModule {
         break;
 
       case 'mouseup':
+        // if (hasMoved)
+        //   createSnapshot()
+        // else
+        //   seek()
+
         // something has probably moved... this can create dummy recordings
-        // could be handled more properly
+        // should be handled properly
         if (this._timeline.state === this._positionEditionState)
-          this._block.createSnapshot();
+          this.block.createSnapshot();
 
         break;
 
@@ -226,7 +228,7 @@ class AbstractAnnotationModule extends AbstractModule {
         // delete
         if (e.which === 8 && this._timeline.state == this._positionEditionState) {
           this._deleteAnnotation(this._positionEditionState.currentItem);
-          this._block.createSnapshot();
+          this.block.createSnapshot();
 
           this._positionEditionState.currentItem = null;
           this._positionEditionState.currentTarget = null;

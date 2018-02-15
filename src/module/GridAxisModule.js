@@ -18,13 +18,14 @@ class GridAxisModule extends AbstractModule {
     return this._layer;
   }
 
-  install(block) {
-    const { timeline, track } = block.ui;
+  install() {
+    const { timeline, track } = this.block.ui;
 
     // dummy axis waiting for track config
     this._layer = new ui.axis.AxisLayer(ui.axis.gridAxisGenerator(1, '4/4'), {
       top: 0,
       height: 12,
+      zIndex: this.zIndex,
     });
 
     // axis use timeline time context
@@ -34,15 +35,15 @@ class GridAxisModule extends AbstractModule {
     track.add(this._layer);
   }
 
-  uninstall(block) {
-    const { track } = block.ui;
+  uninstall() {
+    const { track } = this.block.ui;
     track.remove(this._layer);
   }
 
-  setTrack(trackConfig) {
+  setTrack(buffer, metadata) {
     // as the signature and bpm may change between tracks,
     // we need to recreate generator
-    const { bpm, signature } = trackConfig;
+    const { bpm, signature } = metadata;
     const generator = ui.axis.gridAxisGenerator(bpm, signature);
 
     this._layer.generator = generator;

@@ -102,9 +102,15 @@ class ScrollState extends ui.states.BaseState {
 
 
 const parameters = {
+  axisType: {
+    type: 'enum',
+    list: ['time', 'grid'],
+    default: 'time',
+  },
   scrollBarContainer: {
     type: 'any',
     default: '',
+    required: true,
     metas: {
       desc: 'CSS Selector or DOM element that should contain the scroll bar',
     },
@@ -114,7 +120,7 @@ const parameters = {
     min: 0,
     max: +Infinity,
     step: 1,
-    default: 16,
+    default: 10,
     metas: {
       desc: 'height of the scroll-bar, is removed from '
     }
@@ -138,17 +144,33 @@ class ZoomModule extends AbstractModule {
   constructor(options) {
     super(parameters, options);
 
-    this.gridAxisModule = new GridAxisModule();
+    this.axisModule = this.params.get('axisType') === 'grid' ?
+      new GridAxisModule() : new TimeAxisModule();
 
     this._onScrollBarMouseEvent = this._onScrollBarMouseEvent.bind(this);
     this._updateOffset = this._updateOffset.bind(this);
   }
 
-  install(block) {
-    this._block = block;
+  set block(block) {
+    super.block = block;
+    this.axisModule.block = this.block;
+  }
 
-    // @todo
-    this.gridAxisModule.install(block);
+  get block() {
+    return super.block;
+  }
+
+  set zIndex(zIndex) {
+    super.zIndex = zIndex;
+    this.axisModule.zIndex = this.zIndex;
+  }
+
+  get zIndex() {
+    return super.zIndex;
+  }
+
+  install() {
+    this.axisModule.install();
 
     let $container = this.params.get('scrollBarContainer');
 
@@ -156,7 +178,7 @@ class ZoomModule extends AbstractModule {
       $container = document.querySelector($container);
 
     // create a new timeline to host the scroll bar
-    const visibleWidth = this._block.width;
+    const visibleWidth = this.block.width;
     const height = this.params.get('scrollBarHeight');
 
     $container.style.width = visibleWidth + 'px';
@@ -169,7 +191,7 @@ class ZoomModule extends AbstractModule {
     scrollTimeline.add(scrollTrack, 'scroll');
 
     // data of the scroll bar is the timeContext of the main timeline
-    const mainTimeContext = this._block.ui.timeline.timeContext;
+    const mainTimeContext = this.block.ui.timeline.timeContext;
     const scrollBar = new ui.core.Layer('entity', mainTimeContext, {
       height: height,
       yDomain: [0, 1],
@@ -193,25 +215,24 @@ class ZoomModule extends AbstractModule {
     this._scrollTimeline = scrollTimeline;
     this._scrollTrack = scrollTrack;
     this._scrollBar = scrollBar;
-
     this._scrollTimeline.on('event', this._onScrollBarMouseEvent);
 
     // init states
-    this._zoomState = new ZoomState(this._block, this._block.ui.timeline, this._scrollBar);
-    this._scrollState = new ScrollState(this._block, this._block.ui.timeline, this._scrollBar);
+    this._zoomState = new ZoomState(this.block, this.block.ui.timeline, this._scrollBar);
+    this._scrollState = new ScrollState(this.block, this.block.ui.timeline, this._scrollBar);
 
     if (this.params.get('centeredCurrentPosition'))
       block.addListener(block.EVENTS.CURRENT_POSITION, this._updateOffset);
   }
 
-  uninstall(block) {
-    const { timeline, track } = block.ui;
+  uninstall() {
+    const { timeline, track } = this.block.ui;
 
     timeline.zoom = 1;
     timeline.offset = 0;
     track.update();
 
-    this.gridAxisModule.uninstall(block);
+    this.axisModule.uninstall(this.block);
 
     this._scrollTimeline.remove(this._scrollTrack);
     this._scrollTimeline = null;
@@ -233,18 +254,18 @@ class ZoomModule extends AbstractModule {
     this._scrollTrack.update();
   }
 
-  setTrack(trackConfig) {
-    this.gridAxisModule.setTrack(trackConfig);
+  setTrack(buffer, metadatas) {
+    this.axisModule.setTrack(metadatas);
     // reset zoom
-    const { timeline, track } = this._block.ui;
+    const { timeline, track } = this.block.ui;
 
     timeline.zoom = 1;
     timeline.offset = 0;
     track.update();
 
     // reset scroll
-    const duration = this._block.duration;
-    const pixelsPerSecond = this._block.width / duration;
+    const duration = this.block.duration;
+    const pixelsPerSecond = this.block.width / duration;
 
     this._scrollTimeline.pixelsPerSecond = pixelsPerSecond;
     this._scrollBar.timeContext.duration = duration;
@@ -257,13 +278,13 @@ class ZoomModule extends AbstractModule {
    * Events are forwarded by the BasePlayer, originate from the main timeline.
    */
   onEvent(e, hitLayers) {
-    const timeline = this._block.ui.timeline;
+    const timeline = this.block.ui.timeline;
 
     switch (e.type) {
       case 'mousedown':
         // @todo - can't zoom if
         // `playControl.running === true` && `centeredCurrentPosition === true`
-        if (hitLayers.indexOf(this.gridAxisModule.layer) !== -1) {
+        if (hitLayers.indexOf(this.axisModule.layer) !== -1) {
           timeline.state = this._zoomState;
           return false;
         }
@@ -281,7 +302,7 @@ class ZoomModule extends AbstractModule {
    * Events emitted by the scroll timeline.
    */
   _onScrollBarMouseEvent(e) {
-    const timeline = this._block.ui.timeline;
+    const timeline = this.block.ui.timeline;
 
     switch (e.type) {
       case 'mousedown':
@@ -301,10 +322,10 @@ class ZoomModule extends AbstractModule {
   }
 
   _updateOffset(currentPosition) {
-    const mainTimeline = this._block.ui.timeline;
-    const mainTrack = this._block.ui.track;
+    const mainTimeline = this.block.ui.timeline;
+    const mainTrack = this.block.ui.track;
     const mainTimeContext = mainTimeline.timeContext;
-    const duration = this._block.duration;
+    const duration = this.block.duration;
 
     // zoom cannot be < 1 (cf. ZoomState)
     if (mainTimeContext.zoom > 1) {

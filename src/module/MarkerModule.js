@@ -38,6 +38,8 @@ class MarkerModule extends AbstractAnnotationModule {
     super(parameters, options);
   }
 
+  // return a new annotation datum
+  // @note - should be modified if the data format changes
   createNewAnnotationDatum(time) {
     return {
       time: time,
@@ -45,13 +47,14 @@ class MarkerModule extends AbstractAnnotationModule {
     };
   }
 
-  install(block) {
-    super.install(block);
+  install() {
+    super.install();
 
-    const { timeContext, track } = block.ui;
+    const { timeContext, track } = this.block.ui;
 
     const markers = new ui.core.Layer('collection', [], {
-      height: block.height,
+      height: this.block.height,
+      zIndex: this.zIndex,
     });
 
     markers.setTimeContext(timeContext);

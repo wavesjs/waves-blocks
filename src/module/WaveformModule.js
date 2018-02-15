@@ -10,6 +10,14 @@ const definitions = {
       desc: 'color of the waveform'
     },
   },
+  channels: {
+    type: 'any',
+    default: [0],
+    constant: true,
+    metas: {
+      desc: 'array of the channels to display (defaults to [0] - left channel)'
+    },
+  },
 };
 
 /**
@@ -17,45 +25,73 @@ const definitions = {
  *
  * @param {Object} options - Override default parameters
  * @param {String} [options.color='steelblue'] - Color of the waveform
+ * @param {Array|String} [options.channels=[0]] - Array describing the channels to displays,
+ *  'all' to display all the channels. By default display only the left channel.
  */
 class WaveformModule extends AbstractModule {
   constructor(options) {
     super(definitions, options);
 
-    this._waveform = null;
+    this._waveforms = new Set();
   }
 
-  install(block) {
-    const { track, timeContext } = block.ui;
+  install() {}
 
-    this._waveform = new ui.core.Layer('entity', [], {
-      height: block.height,
-      yDomain: [-1, 1],
+  uninstall() {
+    this._clear();
+  }
+
+  setTrack(buffer, metadatas) {
+    this._clear();
+
+    let channels = this.params.get('channels');
+    const { track, timeContext } = this.block.ui;
+
+    if (channels === 'all') {
+      const numChannels = buffer.numberOfChannels;
+      channels = [];
+
+      for (let i = 0; i < numChannels; i++)
+        channels.push(i);
+    }
+
+    channels.forEach((channel, index) => {
+      let data = null;
+
+      // prevent DOMException, such as:
+      // Failed to execute 'getChannelData' on 'AudioBuffer': channel
+      // index (1) exceeds number of channels (1)
+      try {
+        data = buffer.getChannelData(channel);
+      } catch(err) {};
+
+      if (data !== null) {
+        const layerHeight = this.block.height / channels.length;
+
+        const waveform = new ui.core.Layer('entity', data, {
+          height: layerHeight,
+          top: layerHeight * index,
+          yDomain: [-1, 1],
+          zIndex: this.zIndex,
+        });
+
+        waveform.setTimeContext(timeContext);
+        waveform.configureShape(ui.shapes.Waveform, {}, {
+          color: this.params.get('color'),
+          sampleRate: buffer.sampleRate,
+        });
+
+        track.add(waveform);
+
+        this._waveforms.add(waveform);
+      }
     });
-
-    this._waveform.setTimeContext(timeContext);
-    this._waveform.configureShape(ui.shapes.Waveform, {}, {
-      color: this.params.get('color'),
-    });
-
-    track.add(this._waveform);
   }
 
-  uninstall(block) {
-    const { track } = block.ui;
-    track.remove(this._waveform);
-  }
-
-  setTrack(trackConfig, trackBuffer) {
-    this._waveform.data = trackBuffer.getChannelData(0);
-    this._waveform.render(); // update bindings between data and shapes
-
-    // hack to set the smaple rate properly
-    const $item = this._waveform.$el.querySelector('.waveform');
-    const shape = this._waveform.getShapeFromItem($item);
-    shape.params.sampleRate = trackBuffer.sampleRate;
-
-    this._waveform.update();
+  _clear() {
+    const { track } = this.block.ui;
+    this._waveforms.forEach(waveform => track.remove(waveform));
+    this._waveforms.clear();
   }
 }
 

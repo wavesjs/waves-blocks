@@ -16,13 +16,13 @@ class SegmentModule extends AbstractAnnotationModule {
     };
   }
 
-  install(block) {
-    super.install(block);
+  install() {
+    super.install();
 
-    const { timeContext, track } = block.ui;
+    const { timeContext, track } = this.block.ui;
 
     const segments = new ui.core.Layer('collection', [], {
-      height: block.height,
+      height: this.block.height,
       yDomain: [0, 1],
     });
 
@@ -52,10 +52,10 @@ class SegmentModule extends AbstractAnnotationModule {
     });
 
     segments.setBehavior(new ui.behaviors.SegmentBehavior());
-
     track.add(segments);
 
     this._layer = segments;
+
     this.postInstall(this._layer);
   }
 }

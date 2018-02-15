@@ -15,23 +15,36 @@ import parameters from '@ircam/parameters';
 class AbstractModule {
   constructor(definitions, options) {
     this.params = parameters(definitions, options);
+
+    this._block = null;
+    this._zIndex = null;
+  }
+
+  set block(block) {
+    this._block = block;
+  }
+
+  get block() {
+    return this._block;
+  }
+
+  set zIndex(zIndex) {
+    this._zIndex = zIndex;
+  }
+
+  get zIndex() {
+    return this._zIndex;
   }
 
   /**
-   * Logic to implement when the module is added to the player.
-   *
-   * @abstract
-   * @param {BasePlayer} player - instance of the host player
+   * Logic to implement when the module is added to the block.
    */
-  install(player) {}
+  install() {}
 
   /**
-   * Logic to implement when the module is added to the player.
-   *
-   * @abstract
-   * @param {BasePlayer} player - instance of the host player
+   * Logic to implement when the module is removed to the block.
    */
-  uninstall(player) {}
+  uninstall() {}
 
   /**
    * Abstract methods that can optionnaly be implemented.
@@ -55,6 +68,8 @@ class AbstractModule {
 
   /**
    * event emitted by the main timeline
+   * if returns true, propagate event to next module
+   * if returns false, stop propagation
    */
   // onEvent(e)
 

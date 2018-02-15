@@ -98,7 +98,7 @@ const definitions = {
  * const $container = document.querySelector('#container');
  * const defaultWidth = 1000;
  * const defaultHeight = 1000;
- * * const block = new blocks.core.Block({
+ * const block = new blocks.core.Block({
  *   player: abc.player.SeekPlayer,
  *   container: $container,
  *   size: 'manual', // if 'auto', adjust to fill $container size
@@ -140,6 +140,8 @@ class Block {
       this._width = width;
       this._height = height;
     }
+
+    this.$container = $container;
 
     const playerCtor = this.params.get('player');
     this.player = new playerCtor(this);
@@ -247,20 +249,21 @@ class Block {
    * Module can implement features such as waveform, moving cursor, etc.
    *
    * @param {AbstractModule} module - Module to add
+   * @param {Number} zIndex - zIndex of the added module
    */
-  add(module) {
-    // if (!(module instanceof AbstractModule))
-    //   throw new Error(`module is not an instance of AbstractModule`);
-
+  add(module, zIndex = 0) {
     const index = this._modules.indexOf(module);
 
     if (index === -1) {
+      module.block = this;
+      module.zIndex = zIndex;
       module.install(this);
 
-      if (this.trackConfig && module.setTrack)
-        module.setTrack(this.trackConfig, this.trackBuffer);
+      if (this.trackMetadata && module.setTrack)
+        module.setTrack(this.trackData, this.trackMetadata);
 
       this._modules.push(module);
+      this.render();
     }
   }
 
@@ -270,16 +273,48 @@ class Block {
    * @param {AbstractModule} module - Module to remove
    */
   remove(module) {
-    // if (!(module instanceof AbstractModule))
-    //   throw new Error(`module is not an instance of AbstractModule`);
-
     const index = this._modules.indexOf(module);
 
     if (index !== -1) {
       module.uninstall(this);
+      module.block = null;
+      module.zIndex = null;
+
       this._modules.splice(index, 1);
+      this.render();
     }
   }
+
+  /**
+   * Set or change the track of the player. A track is a JSON object that must
+   * follow the convention defined ??
+   *
+   * @param {Object} trackMetadata - Metadata object
+   * @param {Object} trackData - Data buffer (aka. AudioBuffer)
+   * // @param {Boolean} createSnapshot - for internal use only (cf undo and redo)
+   *
+   * @see {???}
+   */
+  setTrack(trackData, trackMetadata, createSnapshot = true) {
+    this.trackMetadata = trackMetadata;
+    this.trackData = trackData;
+    this.player.setBuffer(trackData); // internally stops the play control
+
+    // @todo - should reset history when false
+    if (createSnapshot === true)
+      this.createSnapshot();
+
+    // propagate events
+    this.stop();
+
+    this.ui.timeline.pixelsPerSecond = this.width / this.duration;
+    this.ui.timeContext.duration = this.duration;
+
+    this._executeCommandForward('setTrack', trackData, trackMetadata);
+    // re-render block
+    this.render();
+  }
+
 
   /**
    * Execute a command on each module that implements the method. The command
@@ -338,13 +373,13 @@ class Block {
    * operations.
    */
   createSnapshot() {
-    // eliminate previous future, create a dystopia
+    // eliminate previous future, create a dystopia...
     this._history = this._history.slice(0, this._historyPointer + 1);
 
     const maxIndex = this._historyLength - 1;
     this._historyPointer = Math.min(maxIndex, this._historyPointer + 1);
 
-    const json = this._copy(this.trackConfig);
+    const json = this._copy(this.trackMetadata);
 
     if (this._history.length === this._historyLength)
       this._history.shift();
@@ -353,8 +388,8 @@ class Block {
   }
 
   getSnapshot() {
-    if (this.trackConfig)
-      return this._copy(this.trackConfig);
+    if (this.trackMetadata)
+      return this._copy(this.trackMetadata);
     else
       return null;
   }
@@ -369,7 +404,7 @@ class Block {
       const json = this._history[pointer];
       this._historyPointer = pointer;
       // create a copy for use as a working object
-      this.setTrack(this._copy(json), this.trackBuffer, false);
+      this.setTrack(this._copy(json), this.trackData, false);
     }
   }
 
@@ -383,7 +418,7 @@ class Block {
     if (json) {
       this._historyPointer = pointer;
       // create a copy for use as a working object
-      this.setTrack(this._copy(json), this.trackBuffer, false);
+      this.setTrack(this._copy(json), this.trackData, false);
     }
   }
 
@@ -400,6 +435,7 @@ class Block {
    */
   set width(value) {
     this._width = value;
+    this.$container.style.width = `${value}px`;
 
     this.ui.timeline.maintainVisibleDuration = true;
     this.ui.timeline.visibleWidth = value;
@@ -425,6 +461,7 @@ class Block {
    */
   set height(value) {
     this._height = value;
+    this.$container.style.height = `${value}px`;
 
     this.ui.timeline.tracks.forEach(track => {
       track.height = value;
@@ -451,38 +488,6 @@ class Block {
     });
 
     this._executeCommandBackward('render');
-  }
-
-  // ---------------------------------------------------------
-  // tracks
-  // ---------------------------------------------------------
-
-  /**
-   * Set or change the track of the player. A track is a JSON object that must
-   * follow the convention defined ??
-   *
-   * @param {Object} trackConfig - Metadata object
-   * @param {Object} trackBuffer - Data buffer (aka. AudioBuffer)
-   * // @param {Boolean} createSnapshot - for internal use only (cf undo and redo)
-   *
-   * @see {???}
-   */
-  setTrack(trackConfig, trackBuffer, createSnapshot = true) {
-    this.trackConfig = trackConfig;
-    this.trackBuffer = trackBuffer;
-    this.player.setTrack(trackBuffer); // internally stops the play control
-
-    // @todo - should reset history when false
-    if (createSnapshot === true)
-      this.createSnapshot();
-
-    // propagate events
-    this.stop();
-
-    this.ui.timeline.pixelsPerSecond = this.width / this.duration;
-    this.ui.timeContext.duration = this.duration;
-
-    this._executeCommandForward('setTrack', trackConfig, trackBuffer);
   }
 
   // ---------------------------------------------------------
@@ -514,14 +519,12 @@ class Block {
   }
 
   /**
-   * Volume of the audio.
+   * Volume of the audio (in db).
    *
-   * @todo - move to dB values ?
-   * @param {Number} gain - Linear gain (between 0 and 1)
+   * @param {Number} db - volume of the player in decibels
    */
-  volume(gain) {
-    if (this.player.volume)
-      this.player.volume(gain);
+  volume(db) {
+    this.player.volume(db);
   }
 
   /**

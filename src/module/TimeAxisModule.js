@@ -18,13 +18,14 @@ class TimeAxisModule extends AbstractModule {
     return this._layer;
   }
 
-  install(block) {
-    const { timeline, track } = block.ui;
+  install() {
+    const { timeline, track } = this.block.ui;
 
     // dummy axis waiting for track config
     this._layer = new ui.axis.AxisLayer(ui.axis.timeAxisGenerator(1, '4/4'), {
       top: 0,
       height: 12,
+      zIndex: this.zIndex,
     });
 
     this._layer.setTimeContext(timeline.timeContext);
@@ -33,12 +34,12 @@ class TimeAxisModule extends AbstractModule {
     track.add(this._layer);
   }
 
-  uninstall(block) {
-    const { track } = block.ui;
+  uninstall() {
+    const { track } = this.block.ui;
     track.remove(this._layer);
   }
 
-  setTrack(trackConfig) {
+  setTrack(data, metadata) {
     this._layer.render();
     this._layer.update();
   }

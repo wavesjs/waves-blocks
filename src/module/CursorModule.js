@@ -30,10 +30,17 @@ class SeekState extends ui.states.BaseState {
   }
 
   handleEvent(e) {
-    if (e.type === 'mousedown' || e.type === 'mousemove') {
+    if (
+      e.type === 'mousedown' || 
+      e.type === 'mousemove' ||
+      e.type === 'dblclick'
+    ) {
       const { timeToPixel, offset } = this.timeline.timeContext;
       const time = timeToPixel.invert(e.x) - offset;
       this.block.seek(time);
+
+      if (e.type === 'dblclick')
+        this.block.start();
     }
   }
 }
@@ -50,11 +57,13 @@ class CursorModule extends AbstractModule {
     this._updateCursorPosition = this._updateCursorPosition.bind(this);
   }
 
-  install(block) {
+  install() {
+    const block = this.block;
     const { timeline, track, timeContext } = block.ui;
 
     this._cursor = new ui.core.Layer('entity', this._data, {
       height: block.height,
+      zIndex: this.zIndex,
     });
 
     this._cursor.setTimeContext(timeContext);
@@ -72,11 +81,10 @@ class CursorModule extends AbstractModule {
     block.addListener(block.EVENTS.CURRENT_POSITION, this._updateCursorPosition);
 
     this._updateCursorPosition(block.position);
-
-    this._block = block;
   }
 
-  uninstall(block) {
+  uninstall() {
+    const block = this.block;
     block.removeListener(block.EVENTS.CURRENT_POSITION, this._updateCursorPosition);
     block.ui.track.remove(this._cursor);
   }
@@ -85,12 +93,13 @@ class CursorModule extends AbstractModule {
     if (this.params.get('seek') === false)
       return true;
 
-    const timeline = this._block.ui.timeline;
+    const timeline = this.block.ui.timeline;
 
     switch (e.type) {
       case 'mousedown':
+      case 'dblclick':
         timeline.state = this._cursorSeekState;
-        return false;
+        return false; // preventPropagation
         break;
       case 'mouseup':
         if (timeline.state === this._cursorSeekState)
