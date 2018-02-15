@@ -1,0 +1,50 @@
+html {
+  background-color: #282828;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  max-width: 1200px;
+}
+
+h1, h2 {
+  color: #f8f8f2;
+  font-family: monospace;
+  font-weight: normal;
+  padding-left: 0;
+}
+
+svg {
+  background-color: #ffffff;
+}
+
+pre {
+  font-size: 11px;
+  margin: 2em 0 !important;
+}
+
+.note {
+  color: #efefef;
+  font-size: 11px;
+  font-family: monospace;
+  font-style: italic;
+}
+
+.note em {
+  font-style: normal;
+  font-weight: bold;
+}
+
+#controllers {
+  margin-top: 10px;
+}
+
+/*code { color: white; }*/
+:not(pre) > code[class*="language-"], pre[class*="language-"] {
+  background-color: #202020 !important;
+}
+
+.waves-basic-controllers.title {
+  color: #f8f8f2 !important;
+}
