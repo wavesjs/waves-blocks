@@ -10,7 +10,7 @@ async function init() {
   const block = new blocks.core.Block({
     player: blocks.player.SimplePlayer,
     container: '#container',
-    size: 'manual',
+    sizing: 'manual',
     width: 1000,
     height: 100,
   });
