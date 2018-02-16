@@ -1,31 +1,53 @@
 import * as ui from 'waves-ui';
 // import AbstractModule from './AbstractModule';
 import parameters from '@ircam/parameters';
+import History from '../utils/History';
 
 const EVENTS = {
   // @arguments
-  // position ?
+  // position
   START: 'start',
   // @arguments
-  // position ?
+  // position
   PAUSE: 'pause',
   // @arguments
-  // position ?
+  // position
   STOP: 'stop',
   // @arguments
-  // target position
+  // targetPosition
   SEEK: 'seek',
   // @arguments
-  // buffer.duration if real-end, last segment.endTime in PreListening mode
+  // endTime
   ENDED: 'ended',
-  // trigered on start, stop, pause and at each raf if playing
   // @arguments
-  // current position
+  // currentPosition
   CURRENT_POSITION: 'position',
+
+  UPDATE: 'update',
 };
 
 class UI {
-  constructor($container, width, height) {
+  constructor($container, sizing, width, height) {
+    $container = ($container instanceof Element) ?
+      $container : document.querySelector($container);
+
+    switch (sizing) {
+      case 'auto':
+        const boundingClientRect = $container.getBoundingClientRect();
+        width = boundingClientRect.width;
+        height = boundingClientRect.height;
+        break;
+
+      case 'manual':
+        $container.style.width = `${width}px`;
+        $container.style.height = `${height}px`;
+        break;
+    }
+
+    this.$container = $container;
+    this._width = width;
+    this._height = height;
+
     // arbitrary `pixelsPerSecond` value to update when a track is set
     this.timeline = new ui.core.Timeline(1, width);
     this.track = new ui.core.Track($container, height);
@@ -35,6 +57,38 @@ class UI {
 
     // time context that should be shared by all (most) mixins / ui layers
     this.timeContext = new ui.core.LayerTimeContext(this.timeline.timeContext);
+  }
+
+  set height(value) {
+    this._height = value;
+    this.$container.style.height = `${value}px`;
+
+    this.timeline.tracks.forEach(track => {
+      track.height = value;
+      track.render();
+      track.update();
+    });
+  }
+
+  get height() {
+    return this._height;
+  }
+
+  set width(value) {
+    this._width = value;
+    this.$container.style.width = `${value}px`;
+
+    this.timeline.maintainVisibleDuration = true;
+    this.timeline.visibleWidth = value;
+
+    this.timeline.tracks.forEach(track => {
+      track.render();
+      track.update();
+    });
+  }
+
+  get width() {
+    return this._width;
   }
 }
 
@@ -56,7 +110,7 @@ const definitions = {
       desc: 'Constructor of the player to be used in the block',
     },
   },
-  size: {
+  sizing: {
     type: 'enum',
     list: ['auto', 'manual'],
     default: 'auto',
@@ -87,8 +141,8 @@ const definitions = {
  * @param {String|Element} [options.container] - Css Selector or DOM Element that will
  *  host the player and additionnal modules
  * @param {AbstractPlayer} - The player to be used by the block.
- * @param {'auto'|'manual'} [options.size='auto'] - How the size of the block
- *  should be defined. If 'auto', the block adjust to the size of the container.
+ * @param {'auto'|'manual'} [options.sizing='auto'] - How the size of the block
+ *  should be defined. If 'auto', the block adjusts to the size of the container.
  *  If 'manual', use `width` and `height` parameters.
  * @param {Number} [options.width=null] - Width of the block if size is 'manual'.
  * @param {Number} [options.height=null] - Height of the block if size is 'manual'.
@@ -101,7 +155,7 @@ const definitions = {
  * const block = new blocks.core.Block({
  *   player: abc.player.SeekPlayer,
  *   container: $container,
- *   size: 'manual', // if 'auto', adjust to fill $container size
+ *   sizing: 'manual', // if 'auto', adjust to fill $container size
  *   width: defaultWidth,
  *   height: defaultHeight,
  * });
@@ -117,45 +171,25 @@ class Block {
   constructor(options) {
     this.params = parameters(definitions, options);
 
-    let $container = this.params.get('container');
-
-    $container = ($container instanceof Element) ?
-      $container : document.querySelector($container);
-
-    const size = this.params.get('size');
-
-    if (size === 'auto') {
-      const boundingClientRect = $container.getBoundingClientRect();
-
-      this._width = boundingClientRect.width;
-      this._height = boundingClientRect.height;
-
-    } else if (size === 'manual') {
-      const width = this.params.get('width');
-      const height = this.params.get('height');
-
-      $container.style.width = `${width}px`;
-      $container.style.height = `${height}px`;
-
-      this._width = width;
-      this._height = height;
-    }
-
-    this.$container = $container;
-
-    const playerCtor = this.params.get('player');
-    this.player = new playerCtor(this);
-    this.ui = new UI(container, this.width, this.height);
-
     this.EVENTS = EVENTS;
-    // snapshots of the data
-    this._history = [];
-    this._historyLength = 10;
-    this._historyPointer = -1;
+
+    this.trackData = null;
+    this.trackMetadata = null;
 
     this._listeners = new Map();
     this._modules = [];
     this._isPlaying = false;
+
+    const $container = this.params.get('container');
+    const sizing = this.params.get('sizing');
+    const width = this.params.get('width');
+    const height = this.params.get('height');
+    this.ui = new UI($container, sizing, width, height);
+
+    const playerCtor = this.params.get('player');
+    this.player = new playerCtor(this);
+
+    this._history = new History(this, 'trackMetadata', 20);
 
     this._monitorPosition = this._monitorPosition.bind(this);
     this._onEvent = this._onEvent.bind(this);
@@ -286,37 +320,6 @@ class Block {
   }
 
   /**
-   * Set or change the track of the player. A track is a JSON object that must
-   * follow the convention defined ??
-   *
-   * @param {Object} trackMetadata - Metadata object
-   * @param {Object} trackData - Data buffer (aka. AudioBuffer)
-   * // @param {Boolean} createSnapshot - for internal use only (cf undo and redo)
-   *
-   * @see {???}
-   */
-  setTrack(trackData, trackMetadata, createSnapshot = true) {
-    this.trackMetadata = trackMetadata;
-    this.trackData = trackData;
-    this.player.setBuffer(trackData); // internally stops the play control
-
-    // @todo - should reset history when false
-    if (createSnapshot === true)
-      this.createSnapshot();
-
-    // propagate events
-    this.stop();
-
-    this.ui.timeline.pixelsPerSecond = this.width / this.duration;
-    this.ui.timeContext.duration = this.duration;
-
-    this._executeCommandForward('setTrack', trackData, trackMetadata);
-    // re-render block
-    this.render();
-  }
-
-
-  /**
    * Execute a command on each module that implements the method. The command
    * are executed in the order in which modules were added to the player.
    * @private
@@ -352,74 +355,88 @@ class Block {
     }
   }
 
+  /**
+   * Set or change the track of the player. A track is a JSON object that must
+   * follow the convention defined ??
+   *
+   * @param {Object} data - data buffer (i.e. AudioBuffer)
+   * @param {Object} metadata - metadata object
+   */
+  setTrack(data, metadata) {
+    this._setTrack(data, metadata, true);
+  }
+
+  /**
+   * Set or change the track of the player. A track is a JSON object that must
+   * follow the convention defined ??
+   * @private
+   *
+   * @param {Object} data - data buffer (i.e. AudioBuffer)
+   * @param {Object} metadata - metadata object
+   * @param {Boolean} resetHistory - reset history
+   */
+  _setTrack(data, metadata, resetHistory = false) {
+    this.trackMetadata = metadata;
+    this.trackData = data;
+    this.player.setBuffer(data); // internally stops the play control
+
+    if (resetHistory) {
+      this._history.reset();
+      this.snap();
+    } else {
+      // snap already emits the event...
+      this.emit(this.EVENTS.UPDATE, this.trackData, this.trackMetadata);
+    }
+
+    this.stop();
+
+    this.ui.timeline.pixelsPerSecond = this.width / this.duration;
+    this.ui.timeContext.duration = this.duration;
+
+    this._executeCommandForward('setTrack', data, metadata);
+
+    this.render();
+  }
 
   // ---------------------------------------------------------
   // undo / redo
   // ---------------------------------------------------------
 
   /**
-   * Copy current config to create snapshots
-   * @private
-   * @todo - define how to handle that...
+   * @todo - review all history algorithm
    */
-  _copy(obj) {
-    const copy = JSON.parse(JSON.stringify(obj));
-    return copy;
+
+  /**
+   * Create a snapshot of the data after modifications. Should be used in
+   * modules after each significant operation, in order to allow `undo` and
+   * `redo` operations.
+   */
+  snap() {
+    this._history.snap();
+    this.emit(this.EVENTS.UPDATE, this.trackData, this.trackMetadata);
   }
 
   /**
-   * Create a snapshot of the data after modifications. Should be used in modules
-   * after each significant operation, in order to allow `undo` and `redo`
-   * operations.
-   */
-  createSnapshot() {
-    // eliminate previous future, create a dystopia...
-    this._history = this._history.slice(0, this._historyPointer + 1);
-
-    const maxIndex = this._historyLength - 1;
-    this._historyPointer = Math.min(maxIndex, this._historyPointer + 1);
-
-    const json = this._copy(this.trackMetadata);
-
-    if (this._history.length === this._historyLength)
-      this._history.shift();
-
-    this._history[this._historyPointer] = json;
-  }
-
-  getSnapshot() {
-    if (this.trackMetadata)
-      return this._copy(this.trackMetadata);
-    else
-      return null;
-  }
-
-  /**
-   * Go to last snapshot.
+   * Go to previous snapshot.
    */
   undo() {
-    const pointer = this._historyPointer - 1;
-
-    if (pointer >= 0) {
-      const json = this._history[pointer];
-      this._historyPointer = pointer;
-      // create a copy for use as a working object
-      this.setTrack(this._copy(json), this.trackData, false);
-    }
+    if (this._history.undo())
+      this._setTrack(this.trackData, this._history.head(), false);
   }
 
   /**
    * Go to next snapshot.
    */
   redo() {
-    const pointer = this._historyPointer + 1;
-    const json = this._history[pointer];
+    if (this._history.redo())
+      this._setTrack(this.trackData, this._history.head(), false);
+  }
 
-    if (json) {
-      this._historyPointer = pointer;
-      // create a copy for use as a working object
-      this.setTrack(this._copy(json), this.trackData, false);
-    }
+  /**
+   * @todo - define if it's really the proper way to go...
+   */
+  head() {
+    return this._history.head();
   }
 
   // ---------------------------------------------------------
@@ -434,22 +451,12 @@ class Block {
    * @instance
    */
   set width(value) {
-    this._width = value;
-    this.$container.style.width = `${value}px`;
-
-    this.ui.timeline.maintainVisibleDuration = true;
-    this.ui.timeline.visibleWidth = value;
-
-    this.ui.timeline.tracks.forEach(track => {
-      track.render();
-      track.update();
-    });
-
+    this.ui.width = value;
     this._executeCommandForward('setWidth', value);
   }
 
   get width() {
-    return this._width;
+    return this.ui.width;
   }
 
   /**
@@ -460,20 +467,12 @@ class Block {
    * @instance
    */
   set height(value) {
-    this._height = value;
-    this.$container.style.height = `${value}px`;
-
-    this.ui.timeline.tracks.forEach(track => {
-      track.height = value;
-      track.render();
-      track.update();
-    });
-
+    this.ui.height = value;
     this._executeCommandForward('setHeight', value);
   }
 
   get height() {
-    return this._height;
+    return this.ui.height;
   }
 
   /**

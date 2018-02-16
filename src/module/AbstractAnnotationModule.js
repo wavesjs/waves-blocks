@@ -53,12 +53,14 @@ class PositionEditionState extends ui.states.BaseState {
 
     this.currentItem = null;
     this.currentTarget = null;
+    this.hasMoved = false;
     this.layer = layer;
   }
 
   clear() {
     this.currentItem = null;
     this.currentTarget = null;
+    this.hasMoved = false;
   }
 
   handleEvent(e) {
@@ -161,9 +163,12 @@ class AbstractAnnotationModule extends AbstractModule {
     switch (e.type) {
       case 'dblclick':
         if (this._layer.hasElement(e.target) && e.target.tagName === 'DIV') {
+          const $target = e.target;
+
           if (this._timeline.state === this._positionEditionState)
             this._positionEditionState.clear();
 
+          const prevContent = $target.textContent;
           this._timeline.state = this._labelEditionState;
 
           const clearLabelEdition = (e) => {
@@ -171,7 +176,8 @@ class AbstractAnnotationModule extends AbstractModule {
               this._labelEditionState.updateLabel();
               this._timeline.state = null;
 
-              this.block.createSnapshot();
+              if ($target.textContent !== prevContent)
+                this.block.snap();
 
               document.removeEventListener('mousedown', clearLabelEdition);
             }
@@ -181,7 +187,7 @@ class AbstractAnnotationModule extends AbstractModule {
           return false;
         } else {
           this._createAnnotation(e.x);
-          this.block.createSnapshot();
+          this.block.snap();
         }
 
         break;
@@ -191,7 +197,7 @@ class AbstractAnnotationModule extends AbstractModule {
         if (this._layer.hasElement(e.target) && e.target.tagName === 'DIV')
           return false;
 
-        if (this._layer.hasElement(e.target)) {
+        if (this._layer.hasElement(e.target) && e.target.tagName !== 'DIV') {
           // clear current target and current item only if the user clicks
           // somewhere else => allows for deleting markers
           const clearPositionEdition = (e) => {
@@ -211,16 +217,19 @@ class AbstractAnnotationModule extends AbstractModule {
 
         break;
 
-      case 'mouseup':
-        // if (hasMoved)
-        //   createSnapshot()
-        // else
-        //   seek()
-
-        // something has probably moved... this can create dummy recordings
-        // should be handled properly
+      case 'mousemove':
         if (this._timeline.state === this._positionEditionState)
-          this.block.createSnapshot();
+          this._positionEditionState.hasMoved = true;
+        break;
+
+      case 'mouseup':
+        if (
+          this._timeline.state === this._positionEditionState &&
+          this._positionEditionState.hasMoved === true
+        ) {
+          this._positionEditionState.hasMoved = false;
+          this.block.snap();
+        }
 
         break;
 
@@ -228,11 +237,9 @@ class AbstractAnnotationModule extends AbstractModule {
         // delete
         if (e.which === 8 && this._timeline.state == this._positionEditionState) {
           this._deleteAnnotation(this._positionEditionState.currentItem);
-          this.block.createSnapshot();
+          this._positionEditionState.clear();
 
-          this._positionEditionState.currentItem = null;
-          this._positionEditionState.currentTarget = null;
-
+          this.block.snap();
           return false;
         }
 

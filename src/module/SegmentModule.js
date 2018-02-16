@@ -24,6 +24,7 @@ class SegmentModule extends AbstractAnnotationModule {
     const segments = new ui.core.Layer('collection', [], {
       height: this.block.height,
       yDomain: [0, 1],
+      zIndex: this.zIndex,
     });
 
     segments.setTimeContext(timeContext);
