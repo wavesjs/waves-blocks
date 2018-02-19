@@ -12,6 +12,9 @@ class SimpleWaveform extends ui.shapes.BaseShape {
       sampleRate: 44100,
       color: '#000000',
       opacity: 1,
+      overlay: false,
+      overlayColor: '#000000',
+      overlayOpacity: 0.4,
     }
   }
 
@@ -19,12 +22,24 @@ class SimpleWaveform extends ui.shapes.BaseShape {
     if (this.$el)
       return this.$el;
 
-    this.$el = document.createElementNS(this.ns, 'path');
-    this.$el.setAttributeNS(null, 'fill', 'none');
-    this.$el.setAttributeNS(null, 'shape-rendering', 'crispEdges');
-    this.$el.setAttributeNS(null, 'stroke', this.params.color);
-    this.$el.setAttributeNS(null, 'fill', this.params.color);
-    this.$el.style.opacity = this.params.opacity;
+    this.$el = document.createElementNS(this.ns, 'g');
+
+    this.$path = document.createElementNS(this.ns, 'path');
+    this.$path.setAttributeNS(null, 'fill', 'none');
+    this.$path.setAttributeNS(null, 'shape-rendering', 'crispEdges');
+    this.$path.setAttributeNS(null, 'stroke', this.params.color);
+    this.$path.setAttributeNS(null, 'fill', this.params.color);
+    this.$path.style.opacity = this.params.opacity;
+
+    this.$el.appendChild(this.$path);
+
+    if (this.params.overlay === true) {
+      this.$overlay = document.createElementNS(this.ns, 'rect');
+      this.$overlay.style.fill = this.params.overlayColor;
+      this.$overlay.style.fillOpacity = this.params.overlayOpacity;
+
+      this.$el.appendChild(this.$overlay);
+    }
 
     return this.$el;
   }
@@ -86,7 +101,14 @@ class SimpleWaveform extends ui.shapes.BaseShape {
           d += 'M';
       }
 
-      this.$el.setAttributeNS(null, 'd', d);
+      this.$path.setAttributeNS(null, 'd', d);
+    }
+
+    if (this.params.overlay) {
+      this.$overlay.setAttribute('x', 0);
+      this.$overlay.setAttribute('y', 0);
+      this.$overlay.setAttribute('width', renderingContext.width);
+      this.$overlay.setAttribute('height', renderingContext.height / 2);
     }
   }
 }
@@ -100,6 +122,30 @@ const definitions = {
       desc: 'color of the waveform'
     },
   },
+  overlay: {
+    type: 'boolean',
+    default: false,
+    constant: true,
+    metas: {
+      desc: 'Define if an overlay should be displayed on the bottom of the waveform',
+    },
+  },
+  overlayColor: {
+    type: 'string',
+    default: '#000000',
+    constant: true,
+    metas: {
+      desc: 'Color of the overlay',
+    },
+  },
+  overlayOpacity: {
+    type: 'float',
+    default: 0.4,
+    constant: true,
+    metas: {
+      desc: 'Opacity of the overlay',
+    },
+  }
 };
 
 /**
@@ -129,6 +175,9 @@ class SimpleWaveformModule extends AbstractModule {
     this._waveform.setTimeContext(timeContext);
     this._waveform.configureShape(SimpleWaveform, {}, {
       color: this.params.get('color'),
+      overlay: this.params.get('overlay'),
+      overlayColor: this.params.get('overlayColor'),
+      overlayOpacity: this.params.get('overlayOpacity'),
     });
 
     track.add(this._waveform);
