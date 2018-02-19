@@ -7,7 +7,7 @@ const audioContext = audio.audioContext;
 const loader = new loaders.AudioBufferLoader();
 
 async function init() {
-  const buffer = await loader.load('./assets/audio/human-voice.wav');
+  const buffer = await loader.load('./assets/audio/cherokee.wav');
 
 
   const block = new blocks.core.Block({
@@ -29,7 +29,7 @@ async function init() {
   block.add(segment, 2);
   block.add(zoom, 3);
 
-  const defaultMetadata = { markers: [{ time: 0, duration: 4, }] };
+  const defaultMetadata = { markers: [{ time: 0, duration: 1, }] };
 
   const scheduler = audio.getScheduler();
   const engine = new audio.GranularEngine();

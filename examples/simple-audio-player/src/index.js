@@ -1,11 +1,11 @@
 import * as blocks from 'waves-blocks';
 import * as loaders from 'waves-loaders';
 import * as controllers from '@ircam/basic-controllers';
-import data from './data.js';
+import metadata from './metadata.js';
 
 async function init() {
   const loader = new loaders.AudioBufferLoader();
-  const buffers = await loader.load(data.map(d => d.buffer));
+  const buffers = await loader.load(metadata.map(d => d.buffer));
 
   const block = new blocks.core.Block({
     player: blocks.player.SimplePlayer,
@@ -33,20 +33,20 @@ async function init() {
   const $labelControl = new controllers.Text({
     container: '#controllers',
     label: 'label',
-    default: data[defaultTrackIndex].title,
+    default: metadata[defaultTrackIndex].title,
     readonly: true,
   });
 
   new controllers.SelectButtons({
     container: '#controllers',
     label: 'change track',
-    options: data.map(d => d.title),
-    default: data[defaultTrackIndex].title,
+    options: metadata.map(d => d.title),
+    default: metadata[defaultTrackIndex].title,
     callback: (title) => {
-      const index = data.findIndex(d => d.title === title);
-      block.setTrack(buffers[index], data[index]);
+      const index = metadata.findIndex(d => d.title === title);
+      block.setTrack(buffers[index], metadata[index]);
 
-      $labelControl.value = data[index].title;
+      $labelControl.value = metadata[index].title;
       currentBuffer = buffers[index];
     }
   });
@@ -107,7 +107,7 @@ async function init() {
     $timeControl.value = `${currentPosition.toFixed(3)} / ${currentBuffer.duration.toFixed(3)}`
   });
 
-  block.setTrack(buffers[defaultTrackIndex], data[defaultTrackIndex]);
+  block.setTrack(buffers[defaultTrackIndex], metadata[defaultTrackIndex]);
 }
 
 window.addEventListener('load', init);

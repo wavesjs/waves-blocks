@@ -1,11 +1,11 @@
 import * as blocks from 'waves-blocks';
 import * as loaders from 'waves-loaders';
 import * as controllers from '@ircam/basic-controllers';
-import data from './data.js';
+import metadata from './metadata.js';
 
 async function init() {
   const loader = new loaders.AudioBufferLoader();
-  const buffers = await loader.load(data.map(d => d.buffer));
+  const buffers = await loader.load(metadata.map(d => d.buffer));
 
   const block = new blocks.core.Block({
     player: blocks.player.SimplePlayer,
@@ -41,7 +41,7 @@ async function init() {
   const $labelControl = new controllers.Text({
     container: '#controllers',
     label: 'label',
-    default: data[currentIndex].title,
+    default: metadata[currentIndex].title,
     readonly: true,
   });
 
@@ -56,18 +56,19 @@ async function init() {
   new controllers.SelectButtons({
     container: '#controllers',
     label: 'change track',
-    options: data.map(d => d.title),
-    default: data[currentIndex].title,
+    options: metadata.map(d => d.title),
+    default: metadata[currentIndex].title,
     callback: (title) => {
-      const index = data.findIndex(d => d.title === title);
-      block.setTrack(buffers[index], data[index]);
+      const index = metadata.findIndex(d => d.title === title);
+      block.setTrack(buffers[index], metadata[index]);
 
-      $labelControl.value = data[index].title;
+      $labelControl.value = metadata[index].title;
       currentBuffer = buffers[index];
       currentIndex = index;
     }
   });
 
+  const names = Object.keys(modules);
 
   for (let name in modules) {
     const module = modules[name];
@@ -78,18 +79,19 @@ async function init() {
       default: false,
       callback: value => {
         const method = value ? 'add' : 'remove';
-        block[method](module);
+        const zIndex = names.indexOf(name);
+        block[method](module, zIndex);
       }
     });
   }
 
   new controllers.TriggerButtons({
     container: '#controllers',
-    label: 'log data',
+    label: 'log metadata',
     options: ['now'],
     callback: () => {
-      const $log = document.querySelector('#log-data');
-      $log.innerHTML = JSON.stringify(data[currentIndex], null, 2);
+      const $log = document.querySelector('#log-metadata');
+      $log.innerHTML = JSON.stringify(metadata[currentIndex], null, 2);
     },
   });
 
@@ -98,7 +100,7 @@ async function init() {
   // ------------------------------------------------------------
 
   block.addListener(block.EVENTS.STOP, () => $transportControl.value = 'stop');
-  block.setTrack(buffers[currentIndex], data[currentIndex]);
+  block.setTrack(buffers[currentIndex], metadata[currentIndex]);
 }
 
 

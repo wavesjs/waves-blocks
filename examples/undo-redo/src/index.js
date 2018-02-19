@@ -1,11 +1,11 @@
 import * as blocks from 'waves-blocks';
 import * as loaders from 'waves-loaders';
 import * as controllers from '@ircam/basic-controllers';
-import data from './data.js';
+import metadata from './metadata.js';
 
 async function init() {
   const loader = new loaders.AudioBufferLoader();
-  const buffers = await loader.load(data.map(d => d.buffer));
+  const buffers = await loader.load(metadata.map(d => d.buffer));
 
   const block = new blocks.core.Block({
     player: blocks.player.SimplePlayer,
@@ -30,14 +30,14 @@ async function init() {
   new controllers.SelectButtons({
     container: '#controllers',
     label: 'change track',
-    options: data.map(d => d.title),
-    default: data[currentIndex].title,
+    options: metadata.map(d => d.title),
+    default: metadata[currentIndex].title,
     callback: (title) => {
       // save current state of the edition
-      data[currentIndex] = block.head();
+      metadata[currentIndex] = block.head();
       // update block with new track
-      currentIndex = data.findIndex(d => d.title === title);
-      block.setTrack(buffers[currentIndex], data[currentIndex]);
+      currentIndex = metadata.findIndex(d => d.title === title);
+      block.setTrack(buffers[currentIndex], metadata[currentIndex]);
     }
   });
 
@@ -75,15 +75,15 @@ async function init() {
 
   block.add(segment, 1);
 
-  // display metadata state at each new snapshot
-  const $logData = document.querySelector('#log-data');
+  // display metametadata state at each new snapshot
+  const $logData = document.querySelector('#log-metadata');
 
   block.addListener(block.EVENTS.UPDATE, (data, metadata) => {
     $logData.textContent = JSON.stringify(metadata, null, 2);
   });
 
   // init first track in the list
-  block.setTrack(buffers[currentIndex], data[currentIndex]);
+  block.setTrack(buffers[currentIndex], metadata[currentIndex]);
 }
 
 window.addEventListener('load', init);
