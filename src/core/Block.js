@@ -3,6 +3,10 @@ import parameters from '@ircam/parameters';
 import AbstractPlayer from './AbstractPlayer';
 import History from '../utils/History';
 
+function decibelToLinear(val) {
+  return Math.exp(0.11512925464970229 * val); // pow(10, val / 20)
+};
+
 const EVENTS = {
   // @arguments
   // position
@@ -518,12 +522,13 @@ class Block {
   }
 
   /**
-   * Volume of the audio (in db).
+   * Volume of the audio (in dB).
    *
    * @param {Number} db - volume of the player in decibels
    */
   volume(db) {
-    this.player.volume(db);
+    const gain = decibelToLinear(db)
+    this.player.gain = gain;
   }
 
   /**

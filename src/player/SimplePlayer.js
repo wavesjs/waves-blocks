@@ -3,10 +3,6 @@ import AbstractPlayer from '../core/AbstractPlayer';
 
 const audioContext = audio.audioContext;
 
-function decibelToLinear(val) {
-  return Math.exp(0.11512925464970229 * val); // pow(10, val / 20)
-};
-
 class SimplePlayer extends AbstractPlayer {
   constructor(block) {
     super(block);
@@ -33,9 +29,12 @@ class SimplePlayer extends AbstractPlayer {
     return this.playControl.running;
   }
 
-  volume(db) {
-    const gain = decibelToLinear(db);
-    this.gain.gain.setValueAtTime(gain, audioContext.currentTime);
+  set gain(gain) {
+    this.gain.gain.setValueAtTime(gain, audioContext.currentTime + 0.005);
+  }
+
+  get gain() {
+    return this.gain.gain.value;
   }
 
   setBuffer(buffer) {

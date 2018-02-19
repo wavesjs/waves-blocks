@@ -32,9 +32,15 @@ class AbstractPlayer {
 
   /**
    * Set the volume of the player
-   * @param {Number} db - volume in decibels
+   * @param {Number} gain - volume [0, 1]
    */
-  volume(db) {}
+  set gain(gain) {
+
+  }
+
+  get gain() {
+
+  }
 
   /**
    * Set the player's audio buffer.
