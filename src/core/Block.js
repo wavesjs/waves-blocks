@@ -1,6 +1,6 @@
 import * as ui from 'waves-ui';
-// import AbstractModule from './AbstractModule';
 import parameters from '@ircam/parameters';
+import AbstractPlayer from './AbstractPlayer';
 import History from '../utils/History';
 
 const EVENTS = {
@@ -103,9 +103,9 @@ const definitions = {
   },
   player: {
     type: 'any',
-    default: null,
+    default: AbstractPlayer, // if we only need the ui part, default to dummy player
     nullable: true,
-    constant: true,
+    constant: true, // sure? why not being able to change dynamically?
     metas: {
       desc: 'Constructor of the player to be used in the block',
     },
