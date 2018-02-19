@@ -11,14 +11,14 @@ export default [
         "duration": 0.5
       },
       {
-        "time": 1.1280142857142856,
-        "duration": 1,
-        "label": "label 1"
+        "time": 1.125113333333333,
+        "duration": 0.3730971428571429,
+        "label": "label 2"
       },
       {
-        "time": 1.7054447619047617,
-        "duration": 0.1,
-        "label": "label 2"
+        "time": 1.701167619047619,
+        "label": "plop",
+        "duration": 0.20915619047619047
       }
     ]
   },

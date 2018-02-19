@@ -75,12 +75,14 @@ async function init() {
 
   block.add(segment, 1);
 
+  // display metadata state at each new snapshot
+  const $logData = document.querySelector('#log-data');
+
   block.addListener(block.EVENTS.UPDATE, (data, metadata) => {
-    console.log(data, metadata);
-    const $code = document.querySelector('#log-data');
-    $code.textContent = JSON.stringify(metadata, null, 2);
+    $logData.textContent = JSON.stringify(metadata, null, 2);
   });
 
+  // init first track in the list
   block.setTrack(buffers[currentIndex], data[currentIndex]);
 }
 
