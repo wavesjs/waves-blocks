@@ -1,4 +1,5 @@
 import AbstractAnnotation from './AbstractAnnotation';
+import BeatGrid from './BeatGrid';
 import Bpf from './Bpf';
 import Cursor from './Cursor';
 import GridAxis from './GridAxis';
@@ -11,6 +12,7 @@ import Zoom from './Zoom';
 
 export default {
   AbstractAnnotation,
+  BeatGrid,
   Bpf,
   Cursor,
   GridAxis,

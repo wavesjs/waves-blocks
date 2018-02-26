@@ -2,7 +2,7 @@ import * as ui from 'waves-ui';
 import AbstractModule from '../core/AbstractModule';
 
 
-class SimpleWaveform extends ui.shapes.BaseShape {
+class SimpleWaveformShape extends ui.shapes.BaseShape {
   getClassName() { return 'simple-waveform' }
 
   _getAccessorList() { return {} }
@@ -173,7 +173,7 @@ class SimpleWaveform extends AbstractModule {
     });
 
     this._waveform.setTimeContext(timeContext);
-    this._waveform.configureShape(SimpleWaveform, {}, {
+    this._waveform.configureShape(SimpleWaveformShape, {}, {
       color: this.params.get('color'),
       overlay: this.params.get('overlay'),
       overlayColor: this.params.get('overlayColor'),
