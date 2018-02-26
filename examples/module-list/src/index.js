@@ -15,12 +15,12 @@ async function init() {
     height: 100,
   });
 
-  const waveform = new blocks.module.WaveformModule({ channels: 'all' });
-  const simpleWaveform = new blocks.module.SimpleWaveformModule();
-  const cursor = new blocks.module.CursorModule();
-  const marker = new blocks.module.MarkerModule();
-  const segment = new blocks.module.SegmentModule();
-  const zoom = new blocks.module.ZoomModule({ scrollBarContainer: '#scroll-bar' });
+  const waveform = new blocks.module.Waveform({ channels: 'all' });
+  const simpleWaveform = new blocks.module.SimpleWaveform();
+  const cursor = new blocks.module.Cursor();
+  const marker = new blocks.module.Marker();
+  const segment = new blocks.module.Segment();
+  const zoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
 
   const modules = {
     waveform,

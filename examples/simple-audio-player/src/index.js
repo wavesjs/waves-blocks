@@ -15,9 +15,9 @@ async function init() {
     height: 100,
   });
 
-  const waveform = new blocks.module.WaveformModule({ channels: 'all' });
-  const cursor = new blocks.module.CursorModule();
-  const zoom = new blocks.module.ZoomModule({ scrollBarContainer: '#scroll-bar' });
+  const waveform = new blocks.module.Waveform({ channels: 'all' });
+  const cursor = new blocks.module.Cursor();
+  const zoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
 
   block.add(waveform, 0);
   block.add(cursor, 1);

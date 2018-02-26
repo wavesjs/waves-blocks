@@ -4,58 +4,58 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _AbstractAnnotationModule = require('./AbstractAnnotationModule');
+var _AbstractAnnotation = require('./AbstractAnnotation');
 
-var _AbstractAnnotationModule2 = _interopRequireDefault(_AbstractAnnotationModule);
+var _AbstractAnnotation2 = _interopRequireDefault(_AbstractAnnotation);
 
-var _BpfModule = require('./BpfModule');
+var _Bpf = require('./Bpf');
 
-var _BpfModule2 = _interopRequireDefault(_BpfModule);
+var _Bpf2 = _interopRequireDefault(_Bpf);
 
-var _CursorModule = require('./CursorModule');
+var _Cursor = require('./Cursor');
 
-var _CursorModule2 = _interopRequireDefault(_CursorModule);
+var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _GridAxisModule = require('./GridAxisModule');
+var _GridAxis = require('./GridAxis');
 
-var _GridAxisModule2 = _interopRequireDefault(_GridAxisModule);
+var _GridAxis2 = _interopRequireDefault(_GridAxis);
 
-var _MarkerModule = require('./MarkerModule');
+var _Marker = require('./Marker');
 
-var _MarkerModule2 = _interopRequireDefault(_MarkerModule);
+var _Marker2 = _interopRequireDefault(_Marker);
 
-var _SegmentModule = require('./SegmentModule');
+var _Segment = require('./Segment');
 
-var _SegmentModule2 = _interopRequireDefault(_SegmentModule);
+var _Segment2 = _interopRequireDefault(_Segment);
 
-var _SimpleWaveformModule = require('./SimpleWaveformModule');
+var _SimpleWaveform = require('./SimpleWaveform');
 
-var _SimpleWaveformModule2 = _interopRequireDefault(_SimpleWaveformModule);
+var _SimpleWaveform2 = _interopRequireDefault(_SimpleWaveform);
 
-var _TimeAxisModule = require('./TimeAxisModule');
+var _TimeAxis = require('./TimeAxis');
 
-var _TimeAxisModule2 = _interopRequireDefault(_TimeAxisModule);
+var _TimeAxis2 = _interopRequireDefault(_TimeAxis);
 
-var _WaveformModule = require('./WaveformModule');
+var _Waveform = require('./Waveform');
 
-var _WaveformModule2 = _interopRequireDefault(_WaveformModule);
+var _Waveform2 = _interopRequireDefault(_Waveform);
 
-var _ZoomModule = require('./ZoomModule');
+var _Zoom = require('./Zoom');
 
-var _ZoomModule2 = _interopRequireDefault(_ZoomModule);
+var _Zoom2 = _interopRequireDefault(_Zoom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
-  AbstractAnnotationModule: _AbstractAnnotationModule2.default,
-  BpfModule: _BpfModule2.default,
-  CursorModule: _CursorModule2.default,
-  GridAxisModule: _GridAxisModule2.default,
-  MarkerModule: _MarkerModule2.default,
-  SegmentModule: _SegmentModule2.default,
-  SimpleWaveformModule: _SimpleWaveformModule2.default,
-  TimeAxisModule: _TimeAxisModule2.default,
-  WaveformModule: _WaveformModule2.default,
-  ZoomModule: _ZoomModule2.default
+  AbstractAnnotation: _AbstractAnnotation2.default,
+  Bpf: _Bpf2.default,
+  Cursor: _Cursor2.default,
+  GridAxis: _GridAxis2.default,
+  Marker: _Marker2.default,
+  Segment: _Segment2.default,
+  SimpleWaveform: _SimpleWaveform2.default,
+  TimeAxis: _TimeAxis2.default,
+  Waveform: _Waveform2.default,
+  Zoom: _Zoom2.default
 };
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkhpc3RvcnkuanMiXSwibmFtZXMiOlsiQWJzdHJhY3RBbm5vdGF0aW9uTW9kdWxlIiwiQnBmTW9kdWxlIiwiQ3Vyc29yTW9kdWxlIiwiR3JpZEF4aXNNb2R1bGUiLCJNYXJrZXJNb2R1bGUiLCJTZWdtZW50TW9kdWxlIiwiU2ltcGxlV2F2ZWZvcm1Nb2R1bGUiLCJUaW1lQXhpc01vZHVsZSIsIldhdmVmb3JtTW9kdWxlIiwiWm9vbU1vZHVsZSJdLCJtYXBwaW5ncyI6Ijs7Ozs7O0FBQUE7Ozs7QUFDQTs7OztBQUNBOzs7O0FBQ0E7Ozs7QUFDQTs7OztBQUNBOzs7O0FBQ0E7Ozs7QUFDQTs7OztBQUNBOzs7O0FBQ0E7Ozs7OztrQkFFZTtBQUNiQSw4REFEYTtBQUViQyxnQ0FGYTtBQUdiQyxzQ0FIYTtBQUliQywwQ0FKYTtBQUtiQyxzQ0FMYTtBQU1iQyx3Q0FOYTtBQU9iQyxzREFQYTtBQVFiQywwQ0FSYTtBQVNiQywwQ0FUYTtBQVViQztBQVZhLEMiLCJmaWxlIjoiSGlzdG9yeS5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBBYnN0cmFjdEFubm90YXRpb25Nb2R1bGUgZnJvbSAnLi9BYnN0cmFjdEFubm90YXRpb25Nb2R1bGUnO1xuaW1wb3J0IEJwZk1vZHVsZSBmcm9tICcuL0JwZk1vZHVsZSc7XG5pbXBvcnQgQ3Vyc29yTW9kdWxlIGZyb20gJy4vQ3Vyc29yTW9kdWxlJztcbmltcG9ydCBHcmlkQXhpc01vZHVsZSBmcm9tICcuL0dyaWRBeGlzTW9kdWxlJztcbmltcG9ydCBNYXJrZXJNb2R1bGUgZnJvbSAnLi9NYXJrZXJNb2R1bGUnO1xuaW1wb3J0IFNlZ21lbnRNb2R1bGUgZnJvbSAnLi9TZWdtZW50TW9kdWxlJztcbmltcG9ydCBTaW1wbGVXYXZlZm9ybU1vZHVsZSBmcm9tICcuL1NpbXBsZVdhdmVmb3JtTW9kdWxlJztcbmltcG9ydCBUaW1lQXhpc01vZHVsZSBmcm9tICcuL1RpbWVBeGlzTW9kdWxlJztcbmltcG9ydCBXYXZlZm9ybU1vZHVsZSBmcm9tICcuL1dhdmVmb3JtTW9kdWxlJztcbmltcG9ydCBab29tTW9kdWxlIGZyb20gJy4vWm9vbU1vZHVsZSc7XG5cbmV4cG9ydCBkZWZhdWx0IHtcbiAgQWJzdHJhY3RBbm5vdGF0aW9uTW9kdWxlLFxuICBCcGZNb2R1bGUsXG4gIEN1cnNvck1vZHVsZSxcbiAgR3JpZEF4aXNNb2R1bGUsXG4gIE1hcmtlck1vZHVsZSxcbiAgU2VnbWVudE1vZHVsZSxcbiAgU2ltcGxlV2F2ZWZvcm1Nb2R1bGUsXG4gIFRpbWVBeGlzTW9kdWxlLFxuICBXYXZlZm9ybU1vZHVsZSxcbiAgWm9vbU1vZHVsZSxcbn07XG4iXX0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImluZGV4LmpzIl0sIm5hbWVzIjpbIkFic3RyYWN0QW5ub3RhdGlvbiIsIkJwZiIsIkN1cnNvciIsIkdyaWRBeGlzIiwiTWFya2VyIiwiU2VnbWVudCIsIlNpbXBsZVdhdmVmb3JtIiwiVGltZUF4aXMiLCJXYXZlZm9ybSIsIlpvb20iXSwibWFwcGluZ3MiOiI7Ozs7OztBQUFBOzs7O0FBQ0E7Ozs7QUFDQTs7OztBQUNBOzs7O0FBQ0E7Ozs7QUFDQTs7OztBQUNBOzs7O0FBQ0E7Ozs7QUFDQTs7OztBQUNBOzs7Ozs7a0JBRWU7QUFDYkEsa0RBRGE7QUFFYkMsb0JBRmE7QUFHYkMsMEJBSGE7QUFJYkMsOEJBSmE7QUFLYkMsMEJBTGE7QUFNYkMsNEJBTmE7QUFPYkMsMENBUGE7QUFRYkMsOEJBUmE7QUFTYkMsOEJBVGE7QUFVYkM7QUFWYSxDIiwiZmlsZSI6ImluZGV4LmpzIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IEFic3RyYWN0QW5ub3RhdGlvbiBmcm9tICcuL0Fic3RyYWN0QW5ub3RhdGlvbic7XG5pbXBvcnQgQnBmIGZyb20gJy4vQnBmJztcbmltcG9ydCBDdXJzb3IgZnJvbSAnLi9DdXJzb3InO1xuaW1wb3J0IEdyaWRBeGlzIGZyb20gJy4vR3JpZEF4aXMnO1xuaW1wb3J0IE1hcmtlciBmcm9tICcuL01hcmtlcic7XG5pbXBvcnQgU2VnbWVudCBmcm9tICcuL1NlZ21lbnQnO1xuaW1wb3J0IFNpbXBsZVdhdmVmb3JtIGZyb20gJy4vU2ltcGxlV2F2ZWZvcm0nO1xuaW1wb3J0IFRpbWVBeGlzIGZyb20gJy4vVGltZUF4aXMnO1xuaW1wb3J0IFdhdmVmb3JtIGZyb20gJy4vV2F2ZWZvcm0nO1xuaW1wb3J0IFpvb20gZnJvbSAnLi9ab29tJztcblxuZXhwb3J0IGRlZmF1bHQge1xuICBBYnN0cmFjdEFubm90YXRpb24sXG4gIEJwZixcbiAgQ3Vyc29yLFxuICBHcmlkQXhpcyxcbiAgTWFya2VyLFxuICBTZWdtZW50LFxuICBTaW1wbGVXYXZlZm9ybSxcbiAgVGltZUF4aXMsXG4gIFdhdmVmb3JtLFxuICBab29tLFxufTtcbiJdfQ==

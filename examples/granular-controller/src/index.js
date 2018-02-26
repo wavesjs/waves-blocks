@@ -18,11 +18,11 @@ async function init() {
     height: 100,
   });
 
-  const waveform = new blocks.module.WaveformModule({ channels: 'all' });
-  const segment = new blocks.module.SegmentModule();
-  const cursor = new blocks.module.CursorModule();
-  const marker = new blocks.module.MarkerModule();
-  const zoom = new blocks.module.ZoomModule({ scrollBarContainer: '#scroll-bar' });
+  const waveform = new blocks.module.Waveform({ channels: 'all' });
+  const segment = new blocks.module.Segment();
+  const cursor = new blocks.module.Cursor();
+  const marker = new blocks.module.Marker();
+  const zoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
 
   block.add(waveform, 0);
   block.add(cursor, 1);

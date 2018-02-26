@@ -15,9 +15,9 @@ async function init() {
     height: 150,
   });
 
-  const waveform = new blocks.module.WaveformModule({ channels: 'all' });
-  const segment = new blocks.module.SegmentModule();
-  const marker = new blocks.module.MarkerModule();
+  const waveform = new blocks.module.Waveform({ channels: 'all' });
+  const segment = new blocks.module.Segment();
+  const marker = new blocks.module.Marker();
 
   block.add(waveform, 0);
 
