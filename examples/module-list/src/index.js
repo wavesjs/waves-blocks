@@ -2,10 +2,14 @@ import * as blocks from 'waves-blocks';
 import * as loaders from 'waves-loaders';
 import * as controllers from '@ircam/basic-controllers';
 import metadata from './metadata.js';
+import beats from './metadata-beats.js';
 
 async function init() {
   const loader = new loaders.AudioBufferLoader();
   const buffers = await loader.load(metadata.map(d => d.buffer));
+
+  for (let i = 0; i < metadata.length; i++)
+    metadata[i].beats = beats.filter(b => b.time < buffers[i].duration);
 
   const block = new blocks.core.Block({
     player: blocks.player.SimplePlayer,
@@ -20,6 +24,7 @@ async function init() {
   const cursor = new blocks.module.Cursor();
   const marker = new blocks.module.Marker();
   const segment = new blocks.module.Segment();
+  const beatGrid = new blocks.module.BeatGrid();
   const zoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
 
   const modules = {
@@ -29,7 +34,12 @@ async function init() {
     marker,
     segment,
     zoom,
+    beatGrid,
   };
+
+
+  block.add(waveform, 0);
+  block.add(beatGrid, 1);
 
   let currentIndex = 0;
   let currentBuffer = buffers[currentIndex];
@@ -93,6 +103,13 @@ async function init() {
       const $log = document.querySelector('#log-metadata');
       $log.innerHTML = JSON.stringify(metadata[currentIndex], null, 2);
     },
+  });
+
+  new controllers.TriggerButtons({
+    container: '#controllers',
+    label: 'beatGrid shift',
+    options: [-0.01, 0.01],
+    callback: value => beatGrid.shift(value),
   });
 
   // ------------------------------------------------------------
