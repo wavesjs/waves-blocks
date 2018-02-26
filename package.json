@@ -19,6 +19,8 @@
     "@ircam/parameters": "^1.2.1",
     "babel-runtime": "^6.26.0",
     "babel-tape-runner": "2.0.1",
+    "deepcopy": "^0.6.3",
+    "object-assign-deep": "^0.3.1",
     "waves-audio": "0.4.0",
     "waves-lfo": "^1.1.6",
     "waves-ui": "github:wavesjs/waves-ui#blocks"
@@ -34,9 +36,9 @@
     "jsdoc": "^3.5.5",
     "jsdoc-template": "github:ircam-jstools/jsdoc-template",
     "klaw": "^2.1.1",
-    "np": "^2.20.0",
-    "tape": "4.8.0",
-    "uglify-js": "^3.3.11",
+    "np": "^2.20.1",
+    "tape": "^4.9.0",
+    "uglify-js": "^3.3.12",
     "watch": "1.0.2"
   }
 }
