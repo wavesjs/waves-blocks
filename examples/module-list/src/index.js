@@ -25,7 +25,8 @@ async function init() {
   const marker = new blocks.module.Marker();
   const segment = new blocks.module.Segment();
   const beatGrid = new blocks.module.BeatGrid();
-  const zoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
+  const simpleZoom = new blocks.module.Zoom();
+  const scrollBarZoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
 
   const modules = {
     waveform,
@@ -33,13 +34,14 @@ async function init() {
     cursor,
     marker,
     segment,
-    zoom,
     beatGrid,
+    simpleZoom,
+    scrollBarZoom,
   };
 
 
   block.add(waveform, 0);
-  block.add(beatGrid, 1);
+  block.add(simpleZoom, 1);
 
   let currentIndex = 0;
   let currentBuffer = buffers[currentIndex];
