@@ -2,6 +2,7 @@ import * as ui from 'waves-ui';
 import parameters from '@ircam/parameters';
 import AbstractPlayer from './AbstractPlayer';
 import History from '../utils/History';
+import objectAssignDeep from 'object-assign-deep';
 
 function decibelToLinear(val) {
   return Math.exp(0.11512925464970229 * val); // pow(10, val / 20)
@@ -416,7 +417,7 @@ class Block {
    * `redo` operations.
    */
   snap() {
-    // this._history.snap();
+    this._history.snap();
     this.emit(this.EVENTS.UPDATE, this._trackData, this._trackMetadata);
   }
 
@@ -424,16 +425,20 @@ class Block {
    * Go to previous snapshot.
    */
   undo() {
-    // if (this._history.undo())
-    //   this._setTrack(this._trackData, this._history.head(), false);
+    if (this._history.undo()) {
+      objectAssignDeep(this._trackMetadata, this._history.head());
+      this._setTrack(this._trackData, this._trackMetadata, false);
+    }
   }
 
   /**
    * Go to next snapshot.
    */
   redo() {
-    // if (this._history.redo())
-    //   this._setTrack(this._trackData, this._history.head(), false);
+    if (this._history.redo()) {
+      objectAssignDeep(this._trackMetadata, this._history.head());
+      this._setTrack(this._trackData, this._trackMetadata, false);
+    }
   }
 
   /**

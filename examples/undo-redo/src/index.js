@@ -78,8 +78,11 @@ async function init() {
   // display metametadata state at each new snapshot
   const $logData = document.querySelector('#log-metadata');
 
-  block.addListener(block.EVENTS.UPDATE, (data, metadata) => {
-    $logData.textContent = JSON.stringify(metadata, null, 2);
+  block.addListener(block.EVENTS.UPDATE, (data, metas) => {
+    if (metadata[currentIndex] !== metas)
+      alert('block metadata has changed! should always keep the same instance');
+
+    $logData.textContent = JSON.stringify(metas, null, 2);
   });
 
   // init first track in the list

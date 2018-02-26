@@ -23,7 +23,7 @@ class History {
   }
 
   head() {
-    return copy(this._stack[this._pointer]);
+    return this._stack[this._pointer];
   }
 
   snap() {
