@@ -33,8 +33,6 @@ async function init() {
     options: metadata.map(d => d.title),
     default: metadata[currentIndex].title,
     callback: (title) => {
-      // save current state of the edition
-      metadata[currentIndex] = block.head();
       // update block with new track
       currentIndex = metadata.findIndex(d => d.title === title);
       block.setTrack(buffers[currentIndex], metadata[currentIndex]);
