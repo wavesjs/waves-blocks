@@ -1,23 +1,23 @@
-import AbstractAnnotationModule from './AbstractAnnotationModule';
-import BpfModule from './BpfModule';
-import CursorModule from './CursorModule';
-import GridAxisModule from './GridAxisModule';
-import MarkerModule from './MarkerModule';
-import SegmentModule from './SegmentModule';
-import SimpleWaveformModule from './SimpleWaveformModule';
-import TimeAxisModule from './TimeAxisModule';
-import WaveformModule from './WaveformModule';
-import ZoomModule from './ZoomModule';
+import AbstractAnnotation from './AbstractAnnotation';
+import Bpf from './Bpf';
+import Cursor from './Cursor';
+import GridAxis from './GridAxis';
+import Marker from './Marker';
+import Segment from './Segment';
+import SimpleWaveform from './SimpleWaveform';
+import TimeAxis from './TimeAxis';
+import Waveform from './Waveform';
+import Zoom from './Zoom';
 
 export default {
-  AbstractAnnotationModule,
-  BpfModule,
-  CursorModule,
-  GridAxisModule,
-  MarkerModule,
-  SegmentModule,
-  SimpleWaveformModule,
-  TimeAxisModule,
-  WaveformModule,
-  ZoomModule,
+  AbstractAnnotation,
+  Bpf,
+  Cursor,
+  GridAxis,
+  Marker,
+  Segment,
+  SimpleWaveform,
+  TimeAxis,
+  Waveform,
+  Zoom,
 };

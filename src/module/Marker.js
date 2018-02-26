@@ -1,4 +1,4 @@
-import AbstractAnnotationModule from './AbstractAnnotationModule';
+import AbstractAnnotation from './AbstractAnnotation';
 import * as ui from 'waves-ui';
 
 
@@ -33,7 +33,7 @@ const parameters = {
  * @param {Object} options - Override default parameters
  * @param {String} color - Default color of the markers.
  */
-class MarkerModule extends AbstractAnnotationModule {
+class Marker extends AbstractAnnotation {
   constructor(options) {
     super(parameters, options);
   }
@@ -89,4 +89,4 @@ class MarkerModule extends AbstractAnnotationModule {
   }
 }
 
-export default MarkerModule;
+export default Marker;

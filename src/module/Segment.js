@@ -1,9 +1,9 @@
-import AbstractAnnotationModule from './AbstractAnnotationModule';
+import AbstractAnnotation from './AbstractAnnotation';
 import * as ui from 'waves-ui';
 
 const parameters = {};
 
-class SegmentModule extends AbstractAnnotationModule {
+class Segment extends AbstractAnnotation {
   constructor(options) {
     super(parameters, options);
   }
@@ -61,4 +61,4 @@ class SegmentModule extends AbstractAnnotationModule {
   }
 }
 
-export default SegmentModule;
+export default Segment;

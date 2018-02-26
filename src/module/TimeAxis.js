@@ -8,7 +8,7 @@ const parameters = {};
  *
  *
  */
-class GridAxisModule extends AbstractModule {
+class TimeAxis extends AbstractModule {
   constructor(options = {}) {
     super(parameters, options);
   }
@@ -22,15 +22,14 @@ class GridAxisModule extends AbstractModule {
     const { timeline, track } = this.block.ui;
 
     // dummy axis waiting for track config
-    this._layer = new ui.axis.AxisLayer(ui.axis.gridAxisGenerator(1, '4/4'), {
+    this._layer = new ui.axis.AxisLayer(ui.axis.timeAxisGenerator(1, '4/4'), {
       top: 0,
       height: 12,
       zIndex: this.zIndex,
     });
 
-    // axis use timeline time context
     this._layer.setTimeContext(timeline.timeContext);
-    this._layer.configureShape(ui.shapes.Ticks, {}, { color: '#909090' });
+    this._layer.configureShape(ui.shapes.Ticks, {}, { color: 'steelblue' });
 
     track.add(this._layer);
   }
@@ -40,16 +39,10 @@ class GridAxisModule extends AbstractModule {
     track.remove(this._layer);
   }
 
-  setTrack(buffer, metadata) {
-    // as the signature and bpm may change between tracks,
-    // we need to recreate generator
-    const { bpm, signature } = metadata;
-    const generator = ui.axis.gridAxisGenerator(bpm, signature);
-
-    this._layer.generator = generator;
+  setTrack(data, metadata) {
     this._layer.render();
     this._layer.update();
   }
 }
 
-export default GridAxisModule;
+export default TimeAxis;

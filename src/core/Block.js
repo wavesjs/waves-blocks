@@ -177,8 +177,8 @@ class Block {
 
     this.EVENTS = EVENTS;
 
-    this.trackData = null;
-    this.trackMetadata = null;
+    this._trackData = null;
+    this._trackMetadata = null;
 
     this._listeners = new Map();
     this._modules = [];
@@ -193,7 +193,7 @@ class Block {
     const playerCtor = this.params.get('player');
     this.player = new playerCtor(this);
 
-    this._history = new History(this, 'trackMetadata', 20);
+    this._history = new History(this, '_trackMetadata', 20);
 
     this._monitorPosition = this._monitorPosition.bind(this);
     this._onEvent = this._onEvent.bind(this);
@@ -297,8 +297,8 @@ class Block {
       module.zIndex = zIndex;
       module.install(this);
 
-      if (this.trackMetadata && module.setTrack)
-        module.setTrack(this.trackData, this.trackMetadata);
+      if (this._trackMetadata && module.setTrack)
+        module.setTrack(this._trackData, this._trackMetadata);
 
       this._modules.push(module);
       this.render();
@@ -380,8 +380,8 @@ class Block {
    * @param {Boolean} resetHistory - reset history
    */
   _setTrack(data, metadata, resetHistory = false) {
-    this.trackMetadata = metadata;
-    this.trackData = data;
+    this._trackMetadata = metadata;
+    this._trackData = data;
     this.player.setBuffer(data); // internally stops the play control
 
     if (resetHistory) {
@@ -389,7 +389,7 @@ class Block {
       this.snap();
     } else {
       // snap already emits the event...
-      this.emit(this.EVENTS.UPDATE, this.trackData, this.trackMetadata);
+      this.emit(this.EVENTS.UPDATE, this._trackData, this._trackMetadata);
     }
 
     this.stop();
@@ -416,31 +416,31 @@ class Block {
    * `redo` operations.
    */
   snap() {
-    this._history.snap();
-    this.emit(this.EVENTS.UPDATE, this.trackData, this.trackMetadata);
+    // this._history.snap();
+    this.emit(this.EVENTS.UPDATE, this._trackData, this._trackMetadata);
   }
 
   /**
    * Go to previous snapshot.
    */
   undo() {
-    if (this._history.undo())
-      this._setTrack(this.trackData, this._history.head(), false);
+    // if (this._history.undo())
+    //   this._setTrack(this._trackData, this._history.head(), false);
   }
 
   /**
    * Go to next snapshot.
    */
   redo() {
-    if (this._history.redo())
-      this._setTrack(this.trackData, this._history.head(), false);
+    // if (this._history.redo())
+    //   this._setTrack(this._trackData, this._history.head(), false);
   }
 
   /**
    * @todo - define if it's really the proper way to go...
    */
-  head() {
-    return this._history.head();
+  get metadata() {
+    return this._trackMetadata;
   }
 
   // ---------------------------------------------------------
@@ -487,6 +487,14 @@ class Block {
     // force rendering from outside the module (i.e. if values have changed)
     this.ui.timeline.tracks.forEach(track => {
       track.render();
+      track.update();
+    });
+
+    this._executeCommandBackward('render');
+  }
+
+  update() {
+    this.ui.timeline.tracks.forEach(track => {
       track.update();
     });
 

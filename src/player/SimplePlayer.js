@@ -7,13 +7,13 @@ class SimplePlayer extends AbstractPlayer {
   constructor(block) {
     super(block);
 
-    this.gain = audioContext.createGain();
-    this.gain.connect(audioContext.destination);
-    this.gain.gain.value = 1;
-    this.gain.gain.setValueAtTime(1, audioContext.currentTime);
+    this.volume = audioContext.createGain();
+    this.volume.connect(audioContext.destination);
+    this.volume.gain.value = 1;
+    this.volume.gain.setValueAtTime(1, audioContext.currentTime);
 
     this.engine = new audio.PlayerEngine();
-    this.engine.connect(this.gain);
+    this.engine.connect(this.volume);
     this.playControl = new audio.PlayControl(this.engine);
   }
 
@@ -30,11 +30,11 @@ class SimplePlayer extends AbstractPlayer {
   }
 
   set gain(gain) {
-    this.gain.gain.setValueAtTime(gain, audioContext.currentTime + 0.005);
+    this.volume.gain.setValueAtTime(gain, audioContext.currentTime + 0.005);
   }
 
   get gain() {
-    return this.gain.gain.value;
+    return this.volume.gain.value;
   }
 
   setBuffer(buffer) {

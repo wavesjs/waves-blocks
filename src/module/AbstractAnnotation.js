@@ -106,7 +106,7 @@ class PositionEditionState extends ui.states.BaseState {
  * ]
  * ```
  */
-class AbstractAnnotationModule extends AbstractModule {
+class AbstractAnnotation extends AbstractModule {
   constructor(parameters, options) {
     super(parameters, options);
 
@@ -253,4 +253,4 @@ class AbstractAnnotationModule extends AbstractModule {
   }
 }
 
-export default AbstractAnnotationModule;
+export default AbstractAnnotation;

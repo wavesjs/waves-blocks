@@ -58,7 +58,7 @@ class SimpleWaveform extends ui.shapes.BaseShape {
     const { minX, maxX } = renderingContext;
     const pixelToTime = renderingContext.timeToPixel.invert;
     const sampleRate = this.params.sampleRate;
-    const blockSize = 5; // this.params.barWidth;
+    const blockSize = 3; // this.params.barWidth;
     const minMax = [];
 
     // get min/max per bar, clamped to the visible area
@@ -156,7 +156,7 @@ const definitions = {
  * @param {Object} options - Override default parameters
  * @param {String} [options.color='steelblue'] - Color of the waveform
  */
-class SimpleWaveformModule extends AbstractModule {
+class SimpleWaveform extends AbstractModule {
   constructor(options) {
     super(definitions, options);
 
@@ -198,4 +198,4 @@ class SimpleWaveformModule extends AbstractModule {
   }
 }
 
-export default SimpleWaveformModule;
+export default SimpleWaveform;

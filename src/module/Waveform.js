@@ -28,7 +28,7 @@ const definitions = {
  * @param {Array|String} [options.channels=[0]] - Array describing the channels to displays,
  *  'all' to display all the channels. By default display only the left channel.
  */
-class WaveformModule extends AbstractModule {
+class Waveform extends AbstractModule {
   constructor(options) {
     super(definitions, options);
 
@@ -95,4 +95,4 @@ class WaveformModule extends AbstractModule {
   }
 }
 
-export default WaveformModule;
+export default Waveform;

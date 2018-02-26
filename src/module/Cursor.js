@@ -17,16 +17,24 @@ const definitions = {
       desc: 'seek interaction of the module',
     },
   },
+  startOnDblClick: {
+    type: 'boolean',
+    default: false,
+    metas: {
+      desc: 'seek and start the player on double click',
+    },
+  },
 };
 
 /**
  * Seek state, only apply if no state previous decorator took precedence
  */
 class SeekState extends ui.states.BaseState {
-  constructor(block, timeline) {
+  constructor(block, timeline, options = {}) {
     super(timeline);
 
     this.block = block;
+    this.options = options;
   }
 
   handleEvent(e) {
@@ -39,14 +47,14 @@ class SeekState extends ui.states.BaseState {
       const time = timeToPixel.invert(e.x) - offset;
       this.block.seek(time);
 
-      if (e.type === 'dblclick')
+      if (e.type === 'dblclick' && this.options.startOnDblClick === true)
         this.block.start();
     }
   }
 }
 
 
-class CursorModule extends AbstractModule {
+class Cursor extends AbstractModule {
   constructor(options) {
     super(definitions, options);
 
@@ -76,7 +84,9 @@ class CursorModule extends AbstractModule {
     track.add(this._cursor);
 
     this._cursor.render();
-    this._cursorSeekState = new SeekState(block, timeline);
+    this._cursorSeekState = new SeekState(block, timeline, {
+      startOnDblClick: this.params.get('startOnDblClick'),
+    });
 
     block.addListener(block.EVENTS.CURRENT_POSITION, this._updateCursorPosition);
 
@@ -116,4 +126,4 @@ class CursorModule extends AbstractModule {
   }
 }
 
-export default CursorModule;
+export default Cursor;

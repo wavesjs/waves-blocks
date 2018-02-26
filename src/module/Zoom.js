@@ -1,6 +1,6 @@
 import AbstractModule from '../core/AbstractModule';
-import GridAxisModule from './GridAxisModule';
-import TimeAxisModule from './TimeAxisModule';
+import GridAxis from './GridAxis';
+import TimeAxis from './TimeAxis';
 import * as ui from 'waves-ui';
 
 const scales = ui.utils.scales;
@@ -122,7 +122,14 @@ const parameters = {
     step: 1,
     default: 10,
     metas: {
-      desc: 'height of the scroll-bar, is removed from '
+      desc: 'height of the scroll-bar'
+    }
+  },
+  scrollBarColor: {
+    type: 'string',
+    default: '#000000',
+    metas: {
+      desc: 'color of the scroll-bar'
     }
   },
   centeredCurrentPosition: {
@@ -140,12 +147,12 @@ const parameters = {
 /**
  *
  */
-class ZoomModule extends AbstractModule {
+class Zoom extends AbstractModule {
   constructor(options) {
     super(parameters, options);
 
     this.axisModule = this.params.get('axisType') === 'grid' ?
-      new GridAxisModule() : new TimeAxisModule();
+      new GridAxis() : new TimeAxis();
 
     this._onScrollBarMouseEvent = this._onScrollBarMouseEvent.bind(this);
     this._updateOffset = this._updateOffset.bind(this);
@@ -205,6 +212,7 @@ class ZoomModule extends AbstractModule {
       y: d => 0,
       width: d => d.visibleDuration,
       height: d => 1,
+      color: d => this.params.get('scrollBarColor'),
     }, {
       displayHandlers: false,
     });
@@ -222,7 +230,7 @@ class ZoomModule extends AbstractModule {
     this._scrollState = new ScrollState(this.block, this.block.ui.timeline, this._scrollBar);
 
     if (this.params.get('centeredCurrentPosition'))
-      block.addListener(block.EVENTS.CURRENT_POSITION, this._updateOffset);
+      this.block.addListener(this.block.EVENTS.CURRENT_POSITION, this._updateOffset);
   }
 
   uninstall() {
@@ -352,4 +360,4 @@ class ZoomModule extends AbstractModule {
   // zoomOut() {}
 }
 
-export default ZoomModule;
+export default Zoom;
