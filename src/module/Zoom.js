@@ -6,7 +6,7 @@ import * as ui from 'waves-ui';
 const scales = ui.utils.scales;
 
 class ZoomState extends ui.states.BaseState {
-  constructor(block, timeline, scrollBar) {
+  constructor(block, timeline, scrollBar = null) {
     super(timeline);
 
     this.block = block;
@@ -67,7 +67,9 @@ class ZoomState extends ui.states.BaseState {
     timeContext.offset = Math.max(minOffset, Math.min(maxOffset, newOffset));
 
     this.timeline.tracks.update();
-    this.scrollBar.update();
+
+    if (this.scrollBar)
+      this.scrollBar.update();
   }
 
   onMouseUp(e) {}
@@ -109,7 +111,7 @@ const parameters = {
   },
   scrollBarContainer: {
     type: 'any',
-    default: '',
+    default: null,
     required: true,
     metas: {
       desc: 'CSS Selector or DOM element that should contain the scroll bar',
@@ -154,6 +156,8 @@ class Zoom extends AbstractModule {
     this.axisModule = this.params.get('axisType') === 'grid' ?
       new GridAxis() : new TimeAxis();
 
+    this.hasScrollBar = false;
+
     this._onScrollBarMouseEvent = this._onScrollBarMouseEvent.bind(this);
     this._updateOffset = this._updateOffset.bind(this);
   }
@@ -181,53 +185,58 @@ class Zoom extends AbstractModule {
 
     let $container = this.params.get('scrollBarContainer');
 
-    if (!($container instanceof Element))
-      $container = document.querySelector($container);
+    if ($container !== null) {
+      if (!($container instanceof Element))
+        $container = document.querySelector($container);
 
-    // create a new timeline to host the scroll bar
-    const visibleWidth = this.block.width;
-    const height = this.params.get('scrollBarHeight');
+      this.hasScrollBar = true;
 
-    $container.style.width = visibleWidth + 'px';
-    $container.style.height = height + 'px';
+      // create a new timeline to host the scroll bar
+      const visibleWidth = this.block.width;
+      const height = this.params.get('scrollBarHeight');
 
-    // init with dummy pixel per second
-    const scrollTimeline = new ui.core.Timeline(1, visibleWidth);
-    const scrollTrack = new ui.core.Track($container, height);
+      $container.style.width = visibleWidth + 'px';
+      $container.style.height = height + 'px';
 
-    scrollTimeline.add(scrollTrack, 'scroll');
+      // init with dummy pixel per second
+      const scrollTimeline = new ui.core.Timeline(1, visibleWidth);
+      const scrollTrack = new ui.core.Track($container, height);
 
-    // data of the scroll bar is the timeContext of the main timeline
-    const mainTimeContext = this.block.ui.timeline.timeContext;
-    const scrollBar = new ui.core.Layer('entity', mainTimeContext, {
-      height: height,
-      yDomain: [0, 1],
-    });
+      scrollTimeline.add(scrollTrack, 'scroll');
 
-    const timeContext = new ui.core.LayerTimeContext(scrollTimeline.timeContext)
-    scrollBar.setTimeContext(timeContext);
+      // data of the scroll bar is the timeContext of the main timeline
+      const mainTimeContext = this.block.ui.timeline.timeContext;
+      const scrollBar = new ui.core.Layer('entity', mainTimeContext, {
+        height: height,
+        yDomain: [0, 1],
+      });
 
-    scrollBar.configureShape(ui.shapes.Segment, {
-      x: d => - d.offset,
-      y: d => 0,
-      width: d => d.visibleDuration,
-      height: d => 1,
-      color: d => this.params.get('scrollBarColor'),
-    }, {
-      displayHandlers: false,
-    });
+      const timeContext = new ui.core.LayerTimeContext(scrollTimeline.timeContext)
+      scrollBar.setTimeContext(timeContext);
 
-    scrollTrack.add(scrollBar, 'scroll');
-    scrollTrack.updateContainer();
+      scrollBar.configureShape(ui.shapes.Segment, {
+        x: d => - d.offset,
+        y: d => 0,
+        width: d => d.visibleDuration,
+        height: d => 1,
+        color: d => this.params.get('scrollBarColor'),
+      }, {
+        displayHandlers: false,
+      });
 
-    this._scrollTimeline = scrollTimeline;
-    this._scrollTrack = scrollTrack;
-    this._scrollBar = scrollBar;
-    this._scrollTimeline.on('event', this._onScrollBarMouseEvent);
+      scrollTrack.add(scrollBar, 'scroll');
+      scrollTrack.updateContainer();
 
-    // init states
-    this._zoomState = new ZoomState(this.block, this.block.ui.timeline, this._scrollBar);
-    this._scrollState = new ScrollState(this.block, this.block.ui.timeline, this._scrollBar);
+      this._scrollTimeline = scrollTimeline;
+      this._scrollTrack = scrollTrack;
+      this._scrollBar = scrollBar;
+      this._scrollTimeline.on('event', this._onScrollBarMouseEvent);
+
+      this._scrollState = new ScrollState(this.block, this.block.ui.timeline, this._scrollBar);
+      this._zoomState = new ZoomState(this.block, this.block.ui.timeline, this._scrollBar);
+    } else {
+      this._zoomState = new ZoomState(this.block, this.block.ui.timeline);
+    }
 
     if (this.params.get('centeredCurrentPosition'))
       this.block.addListener(this.block.EVENTS.CURRENT_POSITION, this._updateOffset);
@@ -236,30 +245,36 @@ class Zoom extends AbstractModule {
   uninstall() {
     const { timeline, track } = this.block.ui;
 
+    // reset zoom value
     timeline.zoom = 1;
     timeline.offset = 0;
     track.update();
 
     this.axisModule.uninstall(this.block);
 
-    this._scrollTimeline.remove(this._scrollTrack);
-    this._scrollTimeline = null;
-    this._scrollTrack = null;
-    this._scrollBar = null;
+    if (this.hasScrollBar) {
+      this._scrollTimeline.removeListener('event', this._onScrollBarMouseEvent);
+      this._scrollTimeline.remove(this._scrollTrack);
+      this._scrollTimeline = null;
+      this._scrollTrack = null;
+      this._scrollBar = null;
+      this._scrollState = null;
+    }
 
     this._zoomState = null;
-    this._scrollState = null;
 
     if (this.params.get('centeredCurrentPosition'))
       block.removeListener(block.EVENTS.CURRENT_POSITION, this._updateOffset);
   }
 
   setWidth(value) {
-    this._scrollTimeline.maintainVisibleDuration = true;
-    this._scrollTimeline.visibleWidth = value;
+    if (this.hasScrollBar) {
+      this._scrollTimeline.maintainVisibleDuration = true;
+      this._scrollTimeline.visibleWidth = value;
 
-    this._scrollTrack.render();
-    this._scrollTrack.update();
+      this._scrollTrack.render();
+      this._scrollTrack.update();
+    }
   }
 
   setTrack(buffer, metadatas) {
@@ -271,15 +286,16 @@ class Zoom extends AbstractModule {
     timeline.offset = 0;
     track.update();
 
-    // reset scroll
-    const duration = this.block.duration;
-    const pixelsPerSecond = this.block.width / duration;
+    if (this.hasScrollBar) {
+      const duration = this.block.duration;
+      const pixelsPerSecond = this.block.width / duration;
 
-    this._scrollTimeline.pixelsPerSecond = pixelsPerSecond;
-    this._scrollBar.timeContext.duration = duration;
+      this._scrollTimeline.pixelsPerSecond = pixelsPerSecond;
+      this._scrollBar.timeContext.duration = duration;
 
-    this._scrollTrack.render();
-    this._scrollTrack.update();
+      this._scrollTrack.render();
+      this._scrollTrack.update();
+    }
   }
 
   /**
@@ -349,8 +365,9 @@ class Zoom extends AbstractModule {
 
         mainTimeContext.offset = offset;
         mainTrack.update();
-        // update scroll bar
-        this._scrollBar.update();
+
+        if (this.hasScrollBar)
+          this._scrollBar.update();
       }
     }
   }
