@@ -37,6 +37,29 @@ class AbstractModule {
   }
 
   /**
+   * Access the object reference on which the module should operate.
+   *
+   * @param {Object} metadata - Track metadata.
+   * @param {String} accessor - Dot sparated path to the target object reference
+   *  (ex. 'machineLearningMetadata.summary').
+   * @return {Object}
+   */
+  accessMetadata(metadata, accessor) {
+    const path = accessor.split('.');
+    let target = metadata;
+
+    for (let i = 0; i < path.length; i++) {
+      const key = path[i];
+      target = target[key];
+    }
+
+    if (target === undefined)
+      console.error(`Invalid metadataAccessor: "${accessor}" does not refer to a valid object reference in`, metadata);
+
+    return target;
+  }
+
+  /**
    * Logic to implement when the module is added to the block.
    */
   install() {}
