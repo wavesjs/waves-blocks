@@ -15,13 +15,26 @@ npm install --save --save-exact waves-blocks
 ## Usage
 
 ```js
+const block = new blocks.core.Block({
+  player: blocks.player.SimplePlayer,
+  container: '#container',
+  sizing: 'manual',
+  width: 1000,
+  height: 100,
+});
 
+const waveform = new blocks.module.Waveform({ channels: 'all' });
+const cursor = new blocks.module.Cursor();
+const zoom = new blocks.module.Zoom({ scrollBarContainer: '#scroll-bar' });
 
+block.add(waveform, 0);
+block.add(cursor, 1);
+block.add(zoom, 2);
+
+block.setTrack(buffer, {});
 ```
 
 ## Available Modules
-
-The
 
 
 ## License
@@ -30,4 +43,3 @@ BSD-3-Clause
 
 ## Acknowledgements
 
-The library has been built in the framework of the H2020 RapidMix EU Project.
