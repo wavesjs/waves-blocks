@@ -5,6 +5,7 @@ import * as ui from 'waves-ui';
 
 const scales = ui.utils.scales;
 
+/** @private */
 class ZoomState extends ui.states.BaseState {
   constructor(block, timeline, scrollBar = null) {
     super(timeline);
@@ -44,7 +45,7 @@ class ZoomState extends ui.states.BaseState {
     // prevent annoying text selection when dragging
     e.originalEvent.preventDefault();
 
-    // define max/min zoom
+    // @note - where does this maxZoom value comes from ?
     const maxZoom = 44100 / this.timeline.timeContext.pixelsPerSecond;
     const minZoom = 1;
 
@@ -75,7 +76,7 @@ class ZoomState extends ui.states.BaseState {
   onMouseUp(e) {}
 }
 
-
+/** @private */
 class ScrollState extends ui.states.BaseState {
   constructor(block, timeline, scrollBar) {
     super(timeline);
@@ -101,8 +102,7 @@ class ScrollState extends ui.states.BaseState {
   }
 }
 
-
-
+/** @private */
 const parameters = {
   axisType: {
     type: 'enum',
@@ -142,12 +142,18 @@ const parameters = {
       desc: `keep waveform center around the block's current position`,
     },
   },
-  // @todo - allow switching between time and grid axis
-  // axis: {}
-}
+};
 
 /**
+ * Module that adds zoom functionnality to the block.
  *
+ * @param {Object} options - Override default options.
+ * @param {String|Element} [options.scrollBarContainer=null] - Element where
+ *  an additionnal scrollbar should be displayed.
+ * @param {Number} options.scrollBarHeight - Height of the scrollbar.
+ * @param {String} [options.scrollBarColor='#000000'] - Color of the scrollbar.
+ * @param {Boolean} [options.centeredCurrentPosition=false] - Scroll to keep
+ *  the block centered on current position while playing.
  */
 class Zoom extends AbstractModule {
   constructor(options) {

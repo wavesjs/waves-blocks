@@ -60,6 +60,9 @@ class Multiline extends ui.shapes.BaseShape {
 
 const definitions = {};
 
+/**
+ * @fixme
+ */
 class Bpf extends AbstractModule {
   constructor(options) {
     super(definitions, options);

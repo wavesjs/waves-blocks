@@ -1,7 +1,7 @@
 import * as ui from 'waves-ui';
 import AbstractModule from '../core/AbstractModule';
 
-
+/** @private */
 class SimpleWaveformShape extends ui.shapes.BaseShape {
   getClassName() { return 'simple-waveform' }
 
@@ -113,6 +113,7 @@ class SimpleWaveformShape extends ui.shapes.BaseShape {
   }
 }
 
+/** @private */
 const definitions = {
   color: {
     type: 'string',
@@ -155,6 +156,10 @@ const definitions = {
  *
  * @param {Object} options - Override default parameters
  * @param {String} [options.color='steelblue'] - Color of the waveform
+ * @param {String} [options.overlay=false] - Display an overlay of the bottom
+ *  section of the waveform.
+ * @param {String} [options.overlayColor='#000000'] - Color of the overlay.
+ * @param {String} [options.overlayOpacity=0.4] - Opacity of the overlay.
  */
 class SimpleWaveform extends AbstractModule {
   constructor(options) {

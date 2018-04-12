@@ -1,6 +1,7 @@
 import * as ui from 'waves-ui';
 import AbstractModule from '../core/AbstractModule';
 
+/** @private */
 const definitions = {
   color: {
     type: 'string',

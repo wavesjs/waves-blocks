@@ -1,7 +1,7 @@
 import AbstractAnnotation from './AbstractAnnotation';
 import * as ui from 'waves-ui';
 
-
+/** @private */
 const parameters = {
   color: {
     type: 'string',

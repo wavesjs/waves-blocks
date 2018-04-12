@@ -3,10 +3,8 @@ import * as ui from 'waves-ui';
 
 const parameters = {};
 
-
 /**
- *
- *
+ * Modules that adds a timed axis to the block.
  */
 class TimeAxis extends AbstractModule {
   constructor(options = {}) {

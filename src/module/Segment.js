@@ -1,8 +1,12 @@
 import AbstractAnnotation from './AbstractAnnotation';
 import * as ui from 'waves-ui';
 
+/** @private */
 const parameters = {};
 
+/**
+ * Module that adds segment functionnality to the block.
+ */
 class Segment extends AbstractAnnotation {
   constructor(options) {
     super(parameters, options);
