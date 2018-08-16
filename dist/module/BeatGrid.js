@@ -122,7 +122,6 @@ var BeatGrid = function (_AbstractModule) {
     value: function shift(dt) {
       var beats = this.block.metadata.beats;
 
-
       for (var i = 0; i < beats.length; i++) {
         beats[i].time += dt;
       }this._beats.update();
