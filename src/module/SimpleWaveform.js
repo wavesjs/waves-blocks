@@ -194,12 +194,13 @@ class SimpleWaveform extends AbstractModule {
 
   setTrack(buffer, metadata) {
     this._waveform.data = buffer.getChannelData(0);
-    this._waveform.render(); // update bindings between data and shapes
 
     // hack to set the smaple rate properly
     const $item = this._waveform.$el.querySelector('.simple-waveform');
     const shape = this._waveform.getShapeFromItem($item);
     shape.params.sampleRate = buffer.sampleRate;
+
+    this._waveform.render(); // update bindings between data and shapes
   }
 }
 
