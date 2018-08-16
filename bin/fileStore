@@ -7,7 +7,7 @@ const cwd = process.cwd();
 /**
  * return a file entity { abs, rel } from an absolute filename
  */
-const get = module.exports.get = (abs) => {
+const get = module.exports.get = abs => {
   const rel = path.relative(cwd, abs);
   const file = { abs, rel };
 
@@ -17,7 +17,7 @@ const get = module.exports.get = (abs) => {
 /**
  * return a collection of file entities { abs, rel } from absolute dirname
  */
-const getAll = module.exports.getAll = (dirname) => {
+const getAll = module.exports.getAll = dirname => {
   const files = [];
 
   // @todo - clean that
@@ -29,7 +29,7 @@ const getAll = module.exports.getAll = (dirname) => {
 
   return new Promise((resolve, reject) => {
     klaw(dirname, { filter: klawFilter })
-      .on('data', (item) => {
+      .on('data', item => {
         if (item.stats.isFile())
           files.push(item.path);
       })

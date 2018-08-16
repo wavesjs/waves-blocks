@@ -7,7 +7,6 @@ const path = require('path');
 const transpiler = require('./transpiler');
 const watch = require('watch');
 
-
 const cwd = process.cwd();
 
 /* --------------------------------------------------------------------------
@@ -18,7 +17,7 @@ const srcDir = path.join(cwd, 'src');
 const srcRegExp = new RegExp('^' + srcDir);
 
 const distDir = path.join(cwd, 'dist');
-const distRegExp = new RegExp('^' + srcDir);
+const distRegExp = new RegExp('^' + distDir);
 
 const watchOptions = {
   ignoreDotFiles: true,
@@ -29,9 +28,48 @@ const watchOptions = {
 
 const babelOptions = JSON.parse(fs.readFileSync(path.join(cwd, '.babelrc')));
 
+// bundle configuration
+const umdTarget = pkg.name + '.umd.js';
+const minTarget = pkg.name + '.min.js';
+
+const browserifyOptions = {
+  debug: true,
+  fullPaths: false,
+  standalone: pkg.standalone,
+};
+
 /* --------------------------------------------------------------------------
  * High-Level logic
  * -------------------------------------------------------------------------- */
+
+ const transpileFile = (file, distDirectory, babelOptions) => {
+  return fileStore.get(file.abs.replace(srcRegExp, distDirectory))
+    .then(dist => {
+      const startTime = new Date().getTime();
+
+      return transpiler.transpile(file, dist, babelOptions)
+        .then(([file, dist]) => {
+          const dt = new Date().getTime() - startTime;
+          return log.transpileSuccess(file, dist, dt);
+        })
+        .catch(err => log.transpileError(file, err));
+    });
+};
+
+function __transpile(srcDirectory, distDirectory, babelOptions) {
+  return fileStore.getAll(srcDirectory)
+    .then(sources => { // 1. transpile all js files (if json, just copy)
+      return sources.reduce((promise, src) => {
+        return promise.then(all => {
+          return transpileFile(src, distDirectory, babelOptions).then(pair => {
+            all.push(pair);
+            return all;
+          });
+        }).catch(err => {});
+      }, Promise.resolve([]));
+    })
+    .catch(err => {});
+}
 
 // watch
 function __watch(srcDirectory, distDirectory, watchOptions, babelOptions) {
@@ -40,16 +78,8 @@ function __watch(srcDirectory, distDirectory, watchOptions, babelOptions) {
     const startTime = new Date().getTime();
     const distFilename = filename.replace(srcRegExp, distDirectory);
 
-    Promise
-      .all([fileStore.get(filename), fileStore.get(distFilename)])
-      .then(([src, dist]) => {
-        transpiler.transpile(src, dist, babelOptions)
-          .then(([src, dist]) => {
-            const dt = new Date().getTime() - startTime;
-            return log.transpileSuccess(src, dist, dt);
-          })
-          .catch(err => log.transpileError(src, err));
-      })
+    fileStore.get(filename)
+      .then(src => transpileFile(src, distDirectory, babelOptions))
       .catch(err => console.error(err.stack))
   };
 
@@ -70,27 +100,23 @@ function __watch(srcDirectory, distDirectory, watchOptions, babelOptions) {
   });
 }
 
-function __transpile(srcDirectory, distDirectory, babelOptions) {
-  // @todo - delete `disr` directory first
+function __bundle(entryPoint, umdTarget, minTarget, browserifyOptions) {
+  const startTime = new Date().getTime();
+  const promises = [
+    fileStore.get(entryPoint),
+    fileStore.get(umdTarget),
+    fileStore.get(minTarget),
+  ];
 
-  fileStore.getAll(srcDirectory)
-    .then(files => {
-      const promises = files.map(src => {
-        const startTime = new Date().getTime();
-        const distFilename = src.abs.replace(srcRegExp, distDirectory);
-
-        return fileStore.get(distFilename)
-          .then(dist => transpiler.transpile(src, dist, babelOptions))
-          .then(([src, dist]) => {
-            const dt = new Date().getTime() - startTime;
-            return log.transpileSuccess(src, dist, dt);
-          })
-          .catch(err => log.transpileError(src, err));
-      });
-
-      return Promise.all(promises);
+  return Promise.all(promises)
+    .then(([src, umd, min]) => {
+      return transpiler.bundle(src, umd, min, browserifyOptions);
     })
-    .catch(err => console.error(err.stack));
+    .then(([src, dist, min]) => {
+      const dt = new Date().getTime() - startTime;
+      return log.bundleSuccess(src, dist, min, dt);
+    })
+    .catch(err => log.bundleError(entryPoint, err));
 }
 
 /* --------------------------------------------------------------------------
@@ -108,6 +134,17 @@ switch (command) {
 
   case '--transpile':
     __transpile(srcDir, distDir, babelOptions);
+    break;
+
+  case '--bundle':
+    __transpile(srcDir, distDir, babelOptions)
+      .then(() => {
+        return __bundle(pkg.main, umdTarget, minTarget, browserifyOptions);
+      })
+      .catch(err => {
+        if (err && err.stack)
+          console.error(err.stack);
+      });
     break;
 }
 
